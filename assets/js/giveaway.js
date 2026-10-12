@@ -86,9 +86,10 @@ async function loadCampaignData() {
 
   if (loadingBanner) loadingBanner.style.display = 'none';
 
-  if (result.ok && result.data && result.data.campaign) {
-    const campaign = result.data.campaign;
-    
+  // API returns a flat campaign object directly at result.data (not nested under .campaign)
+  if (result.ok && result.data && result.data.id) {
+    const campaign = result.data;
+
     if (heroTitle && campaign.title) heroTitle.textContent = campaign.title;
     if (heroDesc && (campaign.tagline || campaign.description)) {
       heroDesc.textContent = campaign.tagline || campaign.description;
@@ -104,11 +105,11 @@ async function loadCampaignData() {
   } else {
     // Honest unavailable state when server endpoint is unreachable
     if (campaignNotice) {
-      campaignNotice.classList.add('visible');
+      campaignNotice.style.display = 'block';
       const errorMsg = result.error || 'Server backend endpoint is currently unreachable.';
       campaignNotice.innerHTML = `
         <strong>Notice:</strong> ${escapeHtml(errorMsg)}<br>
-        <small class="text-muted">In Phase 1, campaign details and 48-hour deadlines are managed by the backend API at <code>/api/campaigns/active</code>. You can test form validation below.</small>
+        <small class="text-muted">Campaign details are managed by the backend API at <code>/api/campaigns/active</code>.</small>
       `;
     }
     showTimingUnavailable('Campaign timing will display when live backend API is connected.');
