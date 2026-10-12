@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campaigns — BINTH.IN Admin</title>
+  <meta name="description" content="Manage and publish 48-hour giveaway campaigns and trigger server-side winner draws.">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body data-page="admin-campaigns">
+
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <div class="admin-layout">
+
+    <!-- Persistent Sidebar -->
+    <aside id="adminSidebar" class="admin-sidebar" role="navigation" aria-label="Admin Navigation">
+      <div class="sidebar-brand">
+        <h2 class="sidebar-brand-name">BINTH.IN</h2>
+        <div class="sidebar-brand-tagline">Phase 1 Admin</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Operations</div>
+        <a href="index.html" class="sidebar-link">
+          <span class="icon">📊</span> Overview
+        </a>
+        <a href="campaigns.html" class="sidebar-link active">
+          <span class="icon">🏷️</span> Campaigns
+        </a>
+        <a href="entries.html" class="sidebar-link">
+          <span class="icon">🎟️</span> Entries
+        </a>
+        <a href="customers.html" class="sidebar-link">
+          <span class="icon">👥</span> Customers
+        </a>
+        <a href="sources.html" class="sidebar-link">
+          <span class="icon">📍</span> QR Sources
+        </a>
+
+        <div class="nav-section-title">Intelligence</div>
+        <a href="reports.html" class="sidebar-link">
+          <span class="icon">📈</span> Reports
+        </a>
+        <a href="settings.html" class="sidebar-link">
+          <span class="icon">⚙️</span> Settings & Docs
+        </a>
+
+        <div class="nav-section-title">Public Views</div>
+        <a href="../index.html" class="sidebar-link" target="_blank" rel="noopener">
+          <span class="icon">🎁</span> Public Giveaway Page ↗
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-role-indicator">
+          <span>Active Role:</span>
+          <strong id="sidebarCurrentRole">Super Admin</strong>
+        </div>
+        <small class="text-muted" style="display: block; font-size: 0.725rem;">
+          Kerala Handmade Boutique Platform
+        </small>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+
+      <header class="admin-topbar">
+        <div class="flex items-center gap-sm">
+          <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="Toggle navigation menu">☰</button>
+          <span style="font-size: 0.95rem; font-weight: 600; color: var(--color-deep-maroon);">
+            Campaign Management
+          </span>
+        </div>
+
+        <div class="topbar-right">
+          <div id="apiStatusPill" class="api-pill api-pill-disconnected">
+            <span class="api-pill-dot"></span> Checking API...
+          </div>
+          <select id="roleSwitcherSelect" class="role-switcher-select" aria-label="Role selector">
+            <option value="super_admin">Role: Super Admin</option>
+            <option value="campaign_manager">Role: Campaign Manager</option>
+            <option value="viewer">Role: Viewer (Read-Only)</option>
+          </select>
+        </div>
+      </header>
+
+      <main class="admin-content" role="main">
+
+        <!-- Notice Banner -->
+        <div id="apiNoticeBanner" class="api-notice-bar" style="display: none;" role="status">
+          <div>
+            <strong>Live Server Notice:</strong>
+            Connecting to <code>/api/admin/campaigns</code>. No mock data is fabricated.
+          </div>
+          <button id="retryApiConnectionBtn" class="btn btn-secondary btn-sm">Retry Connection</button>
+        </div>
+
+        <div class="page-header">
+          <div>
+            <h1>48-Hour Giveaway Campaigns</h1>
+            <p>Configure boutique giveaway prizes, monitor entries, and run verified draws.</p>
+          </div>
+          <button id="openCreateCampaignBtn" class="btn btn-primary" data-require-write="true">
+            + Create New Campaign
+          </button>
+        </div>
+
+        <!-- Campaigns Table -->
+        <div class="table-responsive">
+          <table class="table" aria-label="Campaigns List">
+            <thead>
+              <tr>
+                <th scope="col">Campaign & Prize</th>
+                <th scope="col">Status</th>
+                <th scope="col">Start Time</th>
+                <th scope="col">End Time</th>
+                <th scope="col">Entries</th>
+                <th scope="col">Conversion</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="campaignsTableBody">
+              <tr>
+                <td colspan="7" class="empty-state">
+                  <span class="spinner"></span> Querying campaigns from server...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <!-- Create Campaign Modal -->
+  <div id="createCampaignModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="createCampModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="createCampModalTitle" class="modal-title">Create New Giveaway Campaign</h3>
+        <button id="closeCreateCampaignBtn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="createCampaignForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="campTitle" class="form-label">Campaign Title <span class="required">*</span></label>
+            <input type="text" id="campTitle" class="form-input" placeholder="e.g. Onam Little Princess Festive Kurti Giveaway" required>
+          </div>
+
+          <div class="form-group">
+            <label for="campPrize" class="form-label">Prize Name <span class="required">*</span></label>
+            <input type="text" id="campPrize" class="form-input" placeholder="e.g. Handmade Pure Cotton Festive Kurti Set" required>
+          </div>
+
+          <div class="form-group">
+            <label for="campDesc" class="form-label">Campaign Description</label>
+            <textarea id="campDesc" class="form-textarea" rows="3" placeholder="Brief boutique story and giveaway notes"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Window Duration</label>
+            <input type="text" class="form-input" value="48 Hours (Standard Boutique Window)" readonly style="background: #F5EFEB;">
+            <div class="form-hint">Enforced securely by the server timestamp from publication.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('createCampaignModal').classList.remove('active')">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" data-require-write="true">
+            Publish Campaign to Server
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Winner Selection Modal -->
+  <div id="winnerSelectionModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="winnerModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="winnerModalTitle" class="modal-title">Official Winner Selection</h3>
+        <button id="closeWinnerModalBtn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning" style="font-size: 0.85rem;">
+          <strong>Server-Side Security Verification:</strong><br>
+          Official winner selection is an auditable server operation executed on the backend from verified eligible entries. Browser JavaScript does NOT select winners with <code>Math.random()</code>.
+        </div>
+
+        <p>
+          Target Campaign: <strong id="winnerModalCampaignTitle">—</strong>
+        </p>
+
+        <div class="form-group">
+          <label for="winnerDrawReason" class="form-label">Selection / Reroll Reason <span class="required">*</span></label>
+          <input type="text" id="winnerDrawReason" class="form-input" value="Official closing random draw" required>
+          <div class="form-hint">Stored in backend audit logs with the administrator's identity.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="cancelWinnerModalBtn" class="btn btn-secondary">
+          Cancel
+        </button>
+        <button type="button" id="executeWinnerDrawBtn" class="btn btn-primary" data-require-write="true">
+          Execute Selection (Server)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../assets/js/admin.js"></script>
+</body>
+</html>

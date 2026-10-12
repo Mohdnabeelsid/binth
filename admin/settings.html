@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings & Architecture — BINTH.IN Admin</title>
+  <meta name="description" content="Configure API endpoints, backend connection settings, and view integration documentation.">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body data-page="admin-settings">
+
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <div class="admin-layout">
+
+    <aside id="adminSidebar" class="admin-sidebar" role="navigation" aria-label="Admin Navigation">
+      <div class="sidebar-brand">
+        <h2 class="sidebar-brand-name">BINTH.IN</h2>
+        <div class="sidebar-brand-tagline">Phase 1 Admin</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Operations</div>
+        <a href="index.html" class="sidebar-link">
+          <span class="icon">📊</span> Overview
+        </a>
+        <a href="campaigns.html" class="sidebar-link">
+          <span class="icon">🏷️</span> Campaigns
+        </a>
+        <a href="entries.html" class="sidebar-link">
+          <span class="icon">🎟️</span> Entries
+        </a>
+        <a href="customers.html" class="sidebar-link">
+          <span class="icon">👥</span> Customers
+        </a>
+        <a href="sources.html" class="sidebar-link">
+          <span class="icon">📍</span> QR Sources
+        </a>
+
+        <div class="nav-section-title">Intelligence</div>
+        <a href="reports.html" class="sidebar-link">
+          <span class="icon">📈</span> Reports
+        </a>
+        <a href="settings.html" class="sidebar-link active">
+          <span class="icon">⚙️</span> Settings & Docs
+        </a>
+
+        <div class="nav-section-title">Public Views</div>
+        <a href="../index.html" class="sidebar-link" target="_blank" rel="noopener">
+          <span class="icon">🎁</span> Public Giveaway Page ↗
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-role-indicator">
+          <span>Active Role:</span>
+          <strong id="sidebarCurrentRole">Super Admin</strong>
+        </div>
+        <small class="text-muted" style="display: block; font-size: 0.725rem;">
+          Kerala Handmade Boutique Platform
+        </small>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+
+      <header class="admin-topbar">
+        <div class="flex items-center gap-sm">
+          <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="Toggle navigation menu">☰</button>
+          <span style="font-size: 0.95rem; font-weight: 600; color: var(--color-deep-maroon);">
+            System Configuration & Backend Architecture
+          </span>
+        </div>
+
+        <div class="topbar-right">
+          <div id="apiStatusPill" class="api-pill api-pill-disconnected">
+            <span class="api-pill-dot"></span> Checking API...
+          </div>
+          <select id="roleSwitcherSelect" class="role-switcher-select" aria-label="Role selector">
+            <option value="super_admin">Role: Super Admin</option>
+            <option value="campaign_manager">Role: Campaign Manager</option>
+            <option value="viewer">Role: Viewer (Read-Only)</option>
+          </select>
+        </div>
+      </header>
+
+      <main class="admin-content" role="main">
+
+        <div class="page-header">
+          <div>
+            <h1>System Settings & Integration</h1>
+            <p>API endpoints, role permission boundaries, and backend specifications.</p>
+          </div>
+        </div>
+
+        <!-- Section 1: Backend API Configuration -->
+        <section class="card" style="margin-bottom: var(--space-xl);" aria-labelledby="apiConfigTitle">
+          <div class="card-header">
+            <h2 id="apiConfigTitle" class="card-title">Backend API Connection</h2>
+            <span class="badge badge-maroon">assets/js/api.js</span>
+          </div>
+
+          <p class="text-muted" style="font-size: 0.9rem;">
+            The frontend connects to your backend API. Configure the base endpoint URL below:
+          </p>
+
+          <div style="max-width: 580px; margin-top: var(--space-md);">
+            <div class="form-group">
+              <label for="settingsApiBaseUrl" class="form-label">API Base URL</label>
+              <input type="text" id="settingsApiBaseUrl" class="form-input" value="/api" placeholder="e.g. /api or http://localhost:8000/api">
+              <div class="form-hint">Default is <code>/api</code>. Stored locally in your browser for testing.</div>
+            </div>
+
+            <div class="flex gap-sm" style="margin-top: var(--space-md);">
+              <button id="saveSettingsBtn" class="btn btn-primary btn-sm">Save Base URL</button>
+              <button id="testConnectionBtn" class="btn btn-secondary btn-sm">Test Connection (Ping)</button>
+            </div>
+
+            <div id="connectionTestResult" class="alert" style="display: none; margin-top: var(--space-md);"></div>
+          </div>
+        </section>
+
+        <!-- Section 2: Role Permissions Matrix -->
+        <section class="card" style="margin-bottom: var(--space-xl);" aria-labelledby="rolesTitle">
+          <div class="card-header">
+            <h2 id="rolesTitle" class="card-title">Role Permissions Matrix</h2>
+            <span class="badge badge-sage">Phase 1 Security</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table" aria-label="Role Permissions Matrix Table">
+              <thead>
+                <tr>
+                  <th scope="col">Capability / Action</th>
+                  <th scope="col">Super Admin</th>
+                  <th scope="col">Campaign Manager</th>
+                  <th scope="col">Viewer</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>View Dashboard Metrics & Reports</td>
+                  <td><span class="badge badge-active">Allowed</span></td>
+                  <td><span class="badge badge-active">Allowed</span></td>
+                  <td><span class="badge badge-active">Allowed</span></td>
+                </tr>
+                <tr>
+                  <td>Create & Edit Campaigns</td>
+                  <td><span class="badge badge-active">Allowed</span></td>
+                  <td><span class="badge badge-active">Allowed</span></td>
+                  <td><span class="badge badge-closed">Read-Only</span></td>
+                </tr>
+                <tr>
+                  <td>Register Physical QR Sources</td>
+                  <td><span class="badge badge-active">Allowed</span></td>
+                  <td><span class="badge badge-active">Allowed</span></td>
+                  <td><span class="badge badge-closed">Read-Only</span></td>
+                </tr>
+                <tr>
+                  <td>Execute Server Winner Draw</td>
+                  <td><span class="badge badge-active">Allowed</span></td>
+                  <td><span class="badge badge-active">Allowed (Authorized)</span></td>
+                  <td><span class="badge badge-closed">Disabled</span></td>
+                </tr>
+                <tr>
+                  <td>Export Customer CSV Data</td>
+                  <td><span class="badge badge-active">Allowed</span></td>
+                  <td><span class="badge badge-closed">Restricted</span></td>
+                  <td><span class="badge badge-closed">Disabled</span></td>
+                </tr>
+                <tr>
+                  <td>Modify Backend System Settings</td>
+                  <td><span class="badge badge-active">Allowed</span></td>
+                  <td><span class="badge badge-closed">Restricted</span></td>
+                  <td><span class="badge badge-closed">Disabled</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Section 3: Documented Backend Endpoints -->
+        <section class="card" aria-labelledby="endpointsTitle">
+          <div class="card-header">
+            <h2 id="endpointsTitle" class="card-title">Documented Backend Endpoints Specification</h2>
+            <span class="badge badge-terracotta">REST Contract</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table" aria-label="REST API Endpoints Specification">
+              <thead>
+                <tr>
+                  <th scope="col">Method</th>
+                  <th scope="col">Endpoint</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Authorization</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>GET</code></td>
+                  <td><code>/api/health</code></td>
+                  <td>Health diagnostic ping for connection check</td>
+                  <td>Public</td>
+                </tr>
+                <tr>
+                  <td><code>GET</code></td>
+                  <td><code>/api/campaigns/active?source=CODE</code></td>
+                  <td>Returns current active 48-hour campaign info</td>
+                  <td>Public</td>
+                </tr>
+                <tr>
+                  <td><code>POST</code></td>
+                  <td><code>/api/giveaway/entries</code></td>
+                  <td>Records participant entry with validation & deduplication</td>
+                  <td>Public (Rate-limited)</td>
+                </tr>
+                <tr>
+                  <td><code>GET</code></td>
+                  <td><code>/api/admin/metrics</code></td>
+                  <td>Aggregate metrics for dashboard overview</td>
+                  <td>Authenticated Staff</td>
+                </tr>
+                <tr>
+                  <td><code>GET</code></td>
+                  <td><code>/api/admin/campaigns</code></td>
+                  <td>Listing of campaigns with status & stats</td>
+                  <td>Authenticated Staff</td>
+                </tr>
+                <tr>
+                  <td><code>POST</code></td>
+                  <td><code>/api/admin/campaigns</code></td>
+                  <td>Creates new 48-hour boutique giveaway</td>
+                  <td>Manager / Super Admin</td>
+                </tr>
+                <tr>
+                  <td><code>POST</code></td>
+                  <td><code>/api/admin/campaigns/:id/select-winner</code></td>
+                  <td>Cryptographically secure random draw from eligible entries</td>
+                  <td>Manager / Super Admin</td>
+                </tr>
+                <tr>
+                  <td><code>GET</code></td>
+                  <td><code>/api/admin/entries</code></td>
+                  <td>Master ledger of entries with privacy masking</td>
+                  <td>Authenticated Staff</td>
+                </tr>
+                <tr>
+                  <td><code>GET</code></td>
+                  <td><code>/api/admin/customers</code></td>
+                  <td>Unified customer directory with activity timelines</td>
+                  <td>Authenticated Staff</td>
+                </tr>
+                <tr>
+                  <td><code>GET</code></td>
+                  <td><code>/api/admin/sources</code></td>
+                  <td>Physical QR partner locations & conversion counts</td>
+                  <td>Authenticated Staff</td>
+                </tr>
+                <tr>
+                  <td><code>GET</code></td>
+                  <td><code>/api/admin/reports</code></td>
+                  <td>Conversion report analytics per boutique source</td>
+                  <td>Authenticated Staff</td>
+                </tr>
+                <tr>
+                  <td><code>GET</code></td>
+                  <td><code>/api/admin/export</code></td>
+                  <td>Authorized CSV export of campaign performance</td>
+                  <td>Super Admin</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <script type="module" src="../assets/js/admin.js"></script>
+</body>
+</html>

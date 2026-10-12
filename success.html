@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're Entered! 🤍 — BINTH.IN Giveaway</title>
+  <meta name="description" content="Thank you for entering the BINTH.IN 48-Hour Giveaway.">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/giveaway.css">
+</head>
+<body class="giveaway-page">
+
+  <!-- Header -->
+  <header class="brand-header" role="banner">
+    <div class="container">
+      <div class="brand-logo-link" style="cursor: default;">
+        <span class="brand-logo-text">BINTH.IN</span>
+        <span class="brand-subline">Handmade with care. Made for little ones.</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="mainContent" class="giveaway-hero" role="main">
+    <div class="container-narrow">
+
+      <div class="giveaway-hero-card" style="text-align: center;">
+        <div class="hero-ornament" aria-hidden="true" style="font-size: 2.2rem; margin-bottom: var(--space-xs);">🤍</div>
+        <span class="brand-eyebrow">Participation Recorded</span>
+        <h1>You're in the Giveaway!</h1>
+        <p class="hero-lead">
+          Thank you for sharing what you look for when choosing clothes for her. Your entry has been recorded.
+        </p>
+
+        <!-- Entry Reference Code (No source code shown) -->
+        <div style="background: #F3EAE0; border: 1px dashed var(--color-deep-maroon); border-radius: var(--radius-md); padding: var(--space-md); margin: var(--space-md) auto; max-width: 380px;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted);">
+            Your Entry Reference Code
+          </div>
+          <div id="entryCodeDisplay" style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; color: var(--color-deep-maroon); margin-top: 4px;">
+            ENT-CONFIRMED
+          </div>
+        </div>
+
+        <!-- Participant Details Recap -->
+        <div id="entryRecapSection" style="text-align: left; background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin: var(--space-lg) auto; max-width: 480px; display: none;">
+          <h2 style="font-size: 1rem; color: var(--color-deep-maroon); margin-bottom: var(--space-xs);">Entry Summary</h2>
+          <div style="font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.6;">
+            <div><strong>Parent:</strong> <span id="recapParentName">-</span></div>
+            <div><strong>WhatsApp:</strong> <span id="recapPhone">-</span></div>
+            <div><strong>Age Range:</strong> <span id="recapAge">-</span></div>
+            <div><strong>Submission Time:</strong> <span id="recapTime">-</span></div>
+          </div>
+        </div>
+
+        <!-- What Happens Next -->
+        <section class="card" style="text-align: left; margin: var(--space-xl) auto 0; max-width: 520px; background: #FAF6F1;" aria-labelledby="nextStepsTitle">
+          <h2 id="nextStepsTitle" style="font-size: 1.1rem; margin-bottom: var(--space-xs); color: var(--color-deep-maroon);">
+            What Happens Next?
+          </h2>
+          <ol style="margin-left: 1.25rem; font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.6;">
+            <li>The 48-hour campaign timer continues until closing.</li>
+            <li>Once closed, an eligible entry is selected through our verified selection draw.</li>
+            <li>The winner will be personally notified directly via WhatsApp.</li>
+          </ol>
+        </section>
+
+        <!-- Subtle Instagram Link -->
+        <div style="margin-top: var(--space-xl);">
+          <a 
+            href="https://instagram.com/binth.in" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="btn btn-secondary btn-sm"
+            style="display: inline-flex; align-items: center; gap: 8px; font-weight: 500; color: var(--color-deep-maroon); border-color: var(--color-border);"
+          >
+            <span aria-hidden="true">📸</span>
+            <strong>Follow BINTH.IN on Instagram</strong>
+            <span style="font-size: 0.75rem; opacity: 0.7;">↗</span>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Small Footer -->
+  <footer class="site-footer" role="contentinfo" style="padding: var(--space-lg) 0;">
+    <div class="container">
+      <p style="font-size: 0.8rem; color: var(--color-text-light); margin: 0;">
+        © 2026 BINTH.IN • Handmade with care in Kerala. Made for little ones.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlEntryCode = urlParams.get('entry');
+      const storedEntry = sessionStorage.getItem('binth_last_entry');
+
+      let entryData = null;
+      if (storedEntry) {
+        try { entryData = JSON.parse(storedEntry); } catch (e) {}
+      }
+
+      const codeDisplay = document.getElementById('entryCodeDisplay');
+      if (urlEntryCode) {
+        codeDisplay.textContent = urlEntryCode;
+      } else if (entryData && entryData.entryCode) {
+        codeDisplay.textContent = entryData.entryCode;
+      }
+
+      if (entryData) {
+        const recap = document.getElementById('entryRecapSection');
+        if (recap) {
+          recap.style.display = 'block';
+          document.getElementById('recapParentName').textContent = entryData.parentName || '-';
+          document.getElementById('recapPhone').textContent = entryData.phoneMasked || '-';
+          document.getElementById('recapAge').textContent = (entryData.ageRange ? entryData.ageRange + ' years' : '-');
+          document.getElementById('recapTime').textContent = entryData.submittedAt || new Date().toLocaleString();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

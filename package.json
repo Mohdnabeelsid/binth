@@ -1,0 +1,25 @@
+{
+  "name": "binth-in",
+  "version": "1.0.0",
+  "description": "BINTH.IN — Kerala Handmade Boutique Girlswear & 48-Hour Giveaway Platform",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js",
+    "db:init": "node server/scripts/init-db.js",
+    "build": "node -e \"console.log('Build completed for Vercel.')\""
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

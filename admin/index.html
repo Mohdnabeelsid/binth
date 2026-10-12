@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — BINTH.IN</title>
+  <meta name="description" content="BINTH.IN Phase 1 Campaign & Customer Acquisition Dashboard.">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body data-page="admin-overview">
+
+  <!-- Mobile Sidebar Overlay -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <div class="admin-layout">
+
+    <!-- Persistent Sidebar -->
+    <aside id="adminSidebar" class="admin-sidebar" role="navigation" aria-label="Admin Navigation">
+      <div class="sidebar-brand">
+        <h2 class="sidebar-brand-name">BINTH.IN</h2>
+        <div class="sidebar-brand-tagline">Phase 1 Admin</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Operations</div>
+        <a href="index.html" class="sidebar-link active">
+          <span class="icon">📊</span> Overview
+        </a>
+        <a href="campaigns.html" class="sidebar-link">
+          <span class="icon">🏷️</span> Campaigns
+        </a>
+        <a href="entries.html" class="sidebar-link">
+          <span class="icon">🎟️</span> Entries
+        </a>
+        <a href="customers.html" class="sidebar-link">
+          <span class="icon">👥</span> Customers
+        </a>
+        <a href="sources.html" class="sidebar-link">
+          <span class="icon">📍</span> QR Sources
+        </a>
+
+        <div class="nav-section-title">Intelligence</div>
+        <a href="reports.html" class="sidebar-link">
+          <span class="icon">📈</span> Reports
+        </a>
+        <a href="settings.html" class="sidebar-link">
+          <span class="icon">⚙️</span> Settings & Docs
+        </a>
+
+        <div class="nav-section-title">Public Views</div>
+        <a href="../index.html" class="sidebar-link" target="_blank" rel="noopener">
+          <span class="icon">🎁</span> Public Giveaway Page ↗
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-role-indicator">
+          <span>Active Role:</span>
+          <strong id="sidebarCurrentRole">Super Admin</strong>
+        </div>
+        <small class="text-muted" style="display: block; font-size: 0.725rem;">
+          Kerala Handmade Boutique Platform
+        </small>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="admin-main">
+
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="flex items-center gap-sm">
+          <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="Toggle navigation menu">
+            ☰
+          </button>
+          <span style="font-size: 0.95rem; font-weight: 600; color: var(--color-deep-maroon);">
+            BINTH.IN Management Portal
+          </span>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Live API Status Pill -->
+          <div id="apiStatusPill" class="api-pill api-pill-disconnected">
+            <span class="api-pill-dot"></span> Checking API...
+          </div>
+
+          <!-- Role Switcher (Preview Permissions) -->
+          <div class="flex items-center gap-xs">
+            <label for="roleSwitcherSelect" class="sr-only">Role Selector</label>
+            <select id="roleSwitcherSelect" class="role-switcher-select" aria-label="Select role to preview permissions">
+              <option value="super_admin">Role: Super Admin</option>
+              <option value="campaign_manager">Role: Campaign Manager</option>
+              <option value="viewer">Role: Viewer (Read-Only)</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="admin-content" role="main">
+
+        <!-- Disconnected API Notice Banner -->
+        <div id="apiNoticeBanner" class="api-notice-bar" style="display: none;" role="status">
+          <div>
+            <strong>Backend Service Unavailable:</strong>
+            Attempted connection to <code id="apiEndpointDisplay">/api</code>. No mock data is fabricated. Connect your backend server to view live data.
+          </div>
+          <button id="retryApiConnectionBtn" class="btn btn-secondary btn-sm">
+            Retry Connection
+          </button>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <div>
+            <h1>Platform Overview</h1>
+            <p>Customer acquisition & physical QR campaign performance metrics.</p>
+          </div>
+          <div class="flex gap-xs">
+            <a href="campaigns.html" class="btn btn-primary btn-sm" data-require-write="true">
+              + New Campaign
+            </a>
+          </div>
+        </div>
+
+        <!-- KPI Metrics Grid -->
+        <div class="grid grid-3" style="margin-bottom: var(--space-xl);">
+          
+          <div class="kpi-card">
+            <div class="kpi-label">Active Campaigns</div>
+            <div id="metricActiveCampaigns" class="kpi-num">—</div>
+            <div class="kpi-sub">Live 48-hour physical QR campaigns</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">Total Unique Customers</div>
+            <div id="metricTotalCustomers" class="kpi-num">—</div>
+            <div class="kpi-sub">Master identities stored in PostgreSQL</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">Total Campaign Entries</div>
+            <div id="metricTotalEntries" class="kpi-num">—</div>
+            <div class="kpi-sub">Submitted giveaway participants</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">QR Poster Visits</div>
+            <div id="metricQrVisits" class="kpi-num">—</div>
+            <div class="kpi-sub">Visitors arriving with valid source code</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">Form Starts</div>
+            <div id="metricFormStarts" class="kpi-num">—</div>
+            <div class="kpi-sub">Visitors who initiated the form</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">Entry Conversion Rate</div>
+            <div id="metricConversionRate" class="kpi-num">—</div>
+            <div class="kpi-sub">Formula: (Entries ÷ Visits) × 100</div>
+          </div>
+
+        </div>
+
+        <!-- Recent Campaigns Section -->
+        <section class="card" style="margin-bottom: var(--space-xl);" aria-labelledby="activeCampaignsTitle">
+          <div class="card-header">
+            <h2 id="activeCampaignsTitle" class="card-title">Recent Campaigns</h2>
+            <a href="campaigns.html" class="btn btn-outline btn-sm">View All Campaigns &rarr;</a>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table" aria-label="Recent Campaigns Table">
+              <thead>
+                <tr>
+                  <th scope="col">Campaign Title</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Started</th>
+                  <th scope="col">QR Visits</th>
+                  <th scope="col">Entries</th>
+                  <th scope="col">Conversion</th>
+                </tr>
+              </thead>
+              <tbody id="overviewCampaignsTableBody">
+                <tr>
+                  <td colspan="6" class="empty-state">
+                    <span class="spinner"></span> Connecting to live backend...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <script type="module" src="../assets/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Sources — BINTH.IN Admin</title>
+  <meta name="description" content="Configure and manage physical QR code poster locations across Kerala with instant download and link tracking.">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body data-page="admin-sources">
+
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <div class="admin-layout">
+
+    <aside id="adminSidebar" class="admin-sidebar" role="navigation" aria-label="Admin Navigation">
+      <div class="sidebar-brand">
+        <h2 class="sidebar-brand-name">BINTH.IN</h2>
+        <div class="sidebar-brand-tagline">Phase 1 Admin</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Operations</div>
+        <a href="index.html" class="sidebar-link">
+          <span class="icon">📊</span> Overview
+        </a>
+        <a href="campaigns.html" class="sidebar-link">
+          <span class="icon">🏷️</span> Campaigns
+        </a>
+        <a href="entries.html" class="sidebar-link">
+          <span class="icon">🎟️</span> Entries
+        </a>
+        <a href="customers.html" class="sidebar-link">
+          <span class="icon">👥</span> Customers
+        </a>
+        <a href="sources.html" class="sidebar-link active">
+          <span class="icon">📍</span> QR Sources
+        </a>
+
+        <div class="nav-section-title">Intelligence</div>
+        <a href="reports.html" class="sidebar-link">
+          <span class="icon">📈</span> Reports
+        </a>
+        <a href="settings.html" class="sidebar-link">
+          <span class="icon">⚙️</span> Settings & Docs
+        </a>
+
+        <div class="nav-section-title">Public Views</div>
+        <a href="../index.html" class="sidebar-link" target="_blank" rel="noopener">
+          <span class="icon">🎁</span> Public Giveaway Page ↗
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-role-indicator">
+          <span>Active Role:</span>
+          <strong id="sidebarCurrentRole">Super Admin</strong>
+        </div>
+        <small class="text-muted" style="display: block; font-size: 0.725rem;">
+          Kerala Handmade Boutique Platform
+        </small>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+
+      <header class="admin-topbar">
+        <div class="flex items-center gap-sm">
+          <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="Toggle navigation menu">☰</button>
+          <span style="font-size: 0.95rem; font-weight: 600; color: var(--color-deep-maroon);">
+            15 Physical QR Locations Management
+          </span>
+        </div>
+
+        <div class="topbar-right">
+          <div id="apiStatusPill" class="api-pill api-pill-disconnected">
+            <span class="api-pill-dot"></span> Checking API...
+          </div>
+          <select id="roleSwitcherSelect" class="role-switcher-select" aria-label="Role selector">
+            <option value="super_admin">Role: Super Admin</option>
+            <option value="campaign_manager">Role: Campaign Manager</option>
+            <option value="viewer">Role: Viewer (Read-Only)</option>
+          </select>
+        </div>
+      </header>
+
+      <main class="admin-content" role="main">
+
+        <div id="apiNoticeBanner" class="api-notice-bar" style="display: none;" role="status">
+          <div>
+            <strong>Live Server Notice:</strong>
+            Attempting sync with <code>/api/admin/sources</code>. Local configuration state is preserved.
+          </div>
+          <button id="retryApiConnectionBtn" class="btn btn-secondary btn-sm">Retry Connection</button>
+        </div>
+
+        <!-- Progress Indicator Card for Initial 15 Campaign Locations -->
+        <div class="card" style="margin-bottom: var(--space-lg); background: #FAF5EE;">
+          <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: var(--space-sm);">
+            <div>
+              <span class="brand-eyebrow">Campaign Target</span>
+              <h2 style="font-size: 1.25rem; margin: 0 0 2px;">
+                Physical QR Location Coverage: <span id="locationProgressText">0 of 15 locations configured</span>
+              </h2>
+              <p class="text-muted" style="font-size: 0.85rem; margin: 0;">
+                All QR codes point to the single participation page <code>index.html?source=CODE</code> with hidden source attribution.
+              </p>
+            </div>
+            <div class="flex gap-xs" style="flex-wrap: wrap;">
+              <button id="preload15LocationsBtn" class="btn btn-secondary btn-sm" data-require-write="true" title="Populate standard 15 boutique partner locations across Kerala">
+                ⚡ Populate Initial 15 Locations
+              </button>
+              <button id="openCreateSourceBtn" class="btn btn-primary btn-sm" data-require-write="true">
+                + Add Location
+              </button>
+            </div>
+          </div>
+
+          <!-- Visual Progress Bar -->
+          <div style="width: 100%; height: 8px; background: #EADDCF; border-radius: var(--radius-full); margin-top: var(--space-md); overflow: hidden;">
+            <div id="locationProgressBar" style="width: 0%; height: 100%; background: var(--color-deep-maroon); transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+
+        <div class="page-header" style="margin-bottom: var(--space-md);">
+          <div>
+            <h1>Registered Physical QR Locations</h1>
+            <p>Boutique partners hosting posters with individual source parameters.</p>
+          </div>
+        </div>
+
+        <!-- QR Sources Table -->
+        <div class="table-responsive">
+          <table class="table" aria-label="Physical QR Locations Table">
+            <thead>
+              <tr>
+                <th scope="col">Source Code</th>
+                <th scope="col">Location / Boutique</th>
+                <th scope="col">Area / District</th>
+                <th scope="col">Type</th>
+                <th scope="col">Status</th>
+                <th scope="col">Visits</th>
+                <th scope="col">Entries</th>
+                <th scope="col">Conversion</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sourcesTableBody">
+              <tr>
+                <td colspan="9" class="empty-state">
+                  <span class="spinner"></span> Loading locations...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <!-- Register / Edit QR Location Modal -->
+  <div id="createSourceModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="createSrcModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="createSrcModalTitle" class="modal-title">Configure QR Poster Location</h3>
+        <button id="closeCreateSourceBtn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="createSourceForm">
+        <div class="modal-body">
+          <div id="sourceFormError" class="alert alert-danger" style="display: none;"></div>
+
+          <div class="form-group">
+            <label for="srcCode" class="form-label">Unique Location / Source Code <span class="required">*</span></label>
+            <input type="text" id="srcCode" class="form-input" placeholder="e.g. MCH-SHOP-001" required>
+            <div class="form-hint">Used in QR destination URL: <code>index.html?source=...</code> (Alphanumeric with hyphens).</div>
+          </div>
+
+          <div class="form-group">
+            <label for="srcName" class="form-label">Location Display Name <span class="required">*</span></label>
+            <input type="text" id="srcName" class="form-input" placeholder="e.g. Mananchira Handloom Boutique" required>
+          </div>
+
+          <div class="form-group">
+            <label for="srcEstablishment" class="form-label">Establishment / Venue</label>
+            <input type="text" id="srcEstablishment" class="form-input" placeholder="e.g. Crafts Council Pavilion, Kozhikode">
+          </div>
+
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="srcArea" class="form-label">Area / City <span class="required">*</span></label>
+              <input type="text" id="srcArea" class="form-input" placeholder="e.g. Kozhikode" required>
+            </div>
+
+            <div class="form-group">
+              <label for="srcType" class="form-label">Location Type</label>
+              <select id="srcType" class="form-select">
+                <option value="Boutique">Boutique</option>
+                <option value="Concept Store">Concept Store</option>
+                <option value="Kids Studio">Kids Studio</option>
+                <option value="Artisan Hub">Artisan Hub</option>
+                <option value="Exhibition Stall">Exhibition Stall</option>
+                <option value="Partner Atelier">Partner Atelier</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="srcPartner" class="form-label">Partner Contact / Guild</label>
+            <input type="text" id="srcPartner" class="form-input" placeholder="e.g. Malabar Handloom Guild">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('createSourceModal').classList.remove('active')">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" data-require-write="true">
+            Save Location
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- QR Code Generator & Preview Modal -->
+  <div id="qrCodePreviewModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
+    <div class="modal-dialog" style="max-width: 440px; text-align: center;">
+      <div class="modal-header">
+        <h3 id="qrModalTitle" class="modal-title">QR Code for Location</h3>
+        <button id="closeQrModalBtn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="qrModalLocationName" style="font-weight: 600; color: var(--color-deep-maroon); margin-bottom: 2px;">
+          —
+        </p>
+        <code id="qrModalCodeDisplay" style="font-size: 0.85rem; color: var(--color-text-muted);">—</code>
+
+        <!-- QR Display Canvas / SVG Container -->
+        <div id="qrSvgContainer" style="margin: var(--space-lg) auto; display: inline-block; padding: 12px; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md);">
+        </div>
+
+        <canvas id="qrHiddenCanvas" style="display: none;"></canvas>
+
+        <div style="font-size: 0.8rem; color: var(--color-text-muted); word-break: break-all; margin-bottom: var(--space-md);">
+          <strong>Encodes URL:</strong><br>
+          <span id="qrModalUrlDisplay">—</span>
+        </div>
+
+        <div class="flex gap-xs justify-center" style="flex-wrap: wrap;">
+          <button id="downloadQrPngBtn" class="btn btn-primary btn-sm">
+            ⬇ Download PNG
+          </button>
+          <button id="copyQrUrlBtn" class="btn btn-secondary btn-sm">
+            📋 Copy URL
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../assets/js/admin.js"></script>
+</body>
+</html>

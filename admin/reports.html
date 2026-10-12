@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports — BINTH.IN Admin</title>
+  <meta name="description" content="Source performance analytics, QR scan rates, and conversion intelligence reports.">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body data-page="admin-reports">
+
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <div class="admin-layout">
+
+    <aside id="adminSidebar" class="admin-sidebar" role="navigation" aria-label="Admin Navigation">
+      <div class="sidebar-brand">
+        <h2 class="sidebar-brand-name">BINTH.IN</h2>
+        <div class="sidebar-brand-tagline">Phase 1 Admin</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Operations</div>
+        <a href="index.html" class="sidebar-link">
+          <span class="icon">📊</span> Overview
+        </a>
+        <a href="campaigns.html" class="sidebar-link">
+          <span class="icon">🏷️</span> Campaigns
+        </a>
+        <a href="entries.html" class="sidebar-link">
+          <span class="icon">🎟️</span> Entries
+        </a>
+        <a href="customers.html" class="sidebar-link">
+          <span class="icon">👥</span> Customers
+        </a>
+        <a href="sources.html" class="sidebar-link">
+          <span class="icon">📍</span> QR Sources
+        </a>
+
+        <div class="nav-section-title">Intelligence</div>
+        <a href="reports.html" class="sidebar-link active">
+          <span class="icon">📈</span> Reports
+        </a>
+        <a href="settings.html" class="sidebar-link">
+          <span class="icon">⚙️</span> Settings & Docs
+        </a>
+
+        <div class="nav-section-title">Public Views</div>
+        <a href="../index.html" class="sidebar-link" target="_blank" rel="noopener">
+          <span class="icon">🎁</span> Public Giveaway Page ↗
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-role-indicator">
+          <span>Active Role:</span>
+          <strong id="sidebarCurrentRole">Super Admin</strong>
+        </div>
+        <small class="text-muted" style="display: block; font-size: 0.725rem;">
+          Kerala Handmade Boutique Platform
+        </small>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+
+      <header class="admin-topbar">
+        <div class="flex items-center gap-sm">
+          <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="Toggle navigation menu">☰</button>
+          <span style="font-size: 0.95rem; font-weight: 600; color: var(--color-deep-maroon);">
+            Acquisition & Conversion Reports
+          </span>
+        </div>
+
+        <div class="topbar-right">
+          <div id="apiStatusPill" class="api-pill api-pill-disconnected">
+            <span class="api-pill-dot"></span> Checking API...
+          </div>
+          <select id="roleSwitcherSelect" class="role-switcher-select" aria-label="Role selector">
+            <option value="super_admin">Role: Super Admin</option>
+            <option value="campaign_manager">Role: Campaign Manager</option>
+            <option value="viewer">Role: Viewer (Read-Only)</option>
+          </select>
+        </div>
+      </header>
+
+      <main class="admin-content" role="main">
+
+        <div id="apiNoticeBanner" class="api-notice-bar" style="display: none;" role="status">
+          <div>
+            <strong>Live Server Notice:</strong>
+            Connecting to <code>/api/admin/reports</code>. No mock data is fabricated.
+          </div>
+          <button id="retryApiConnectionBtn" class="btn btn-secondary btn-sm">Retry Connection</button>
+        </div>
+
+        <div class="page-header">
+          <div>
+            <h1>Source Performance Reports</h1>
+            <p>Conversion metrics across physical boutique posters. Formula: <code>(Entries ÷ Visits) × 100</code>.</p>
+          </div>
+          <button id="exportReportsCsvBtn" class="btn btn-primary" data-require-write="true">
+            Export CSV Report
+          </button>
+        </div>
+
+        <div class="alert alert-info" style="font-size: 0.85rem; margin-bottom: var(--space-lg);">
+          <strong>Export Security Rule:</strong> Actual customer exports must be handled by an authorized backend endpoint. Client-only exports do not guarantee role-based confidentiality.
+        </div>
+
+        <!-- Reports Table -->
+        <div class="table-responsive">
+          <table class="table" aria-label="Source Performance Report Table">
+            <thead>
+              <tr>
+                <th scope="col">Location Name</th>
+                <th scope="col">Source Code</th>
+                <th scope="col">Landing Visits</th>
+                <th scope="col">Form Starts</th>
+                <th scope="col">Successful Entries</th>
+                <th scope="col">Eligible Entries</th>
+                <th scope="col">Conversion Rate</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody">
+              <tr>
+                <td colspan="7" class="empty-state">
+                  <span class="spinner"></span> Querying report data from server...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <script type="module" src="../assets/js/admin.js"></script>
+</body>
+</html>
