@@ -22,7 +22,6 @@ router.get('/', async (req, res) => {
     status: dbStatus === 'connected' ? 'healthy' : 'degraded',
     version: '1.0.0',
     database: dbStatus,
-    provider: 'Supabase PostgreSQL',
     timestamp: new Date().toISOString()
   });
 });

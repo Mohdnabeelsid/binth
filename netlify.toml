@@ -1,0 +1,30 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/"
+  to = "/admin/index.html"
+  status = 200
+
+# Transparent API reverse-proxy rule
+# Forwards /api/* calls from Netlify static frontend to the Node.js/Express REST API on Render
+# Replace "https://binth-api.onrender.com" with your active Render web service URL
+[[redirects]]
+  from = "/api/*"
+  to = "https://binth-api.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"

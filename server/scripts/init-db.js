@@ -66,40 +66,48 @@ async function initializeDatabase() {
     process.exit(1);
   }
 
-  // Seed default super_admin if no admin user exists
-  const adminEmail = (process.env.ADMIN_DEFAULT_EMAIL || 'admin@binth.in').trim().toLowerCase();
-  const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'BinthAdmin2026!';
+  // Seed initial super_admin only if no super admin exists
+  const adminEmail = (process.env.ADMIN_DEFAULT_EMAIL || '').trim().toLowerCase();
+  const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || '';
   const adminName = process.env.ADMIN_DEFAULT_NAME || 'BINTH Administrator';
 
   try {
     const { rows } = await pool.query(
-      `SELECT id, email, role FROM admin_users WHERE email = $1 LIMIT 1`,
-      [adminEmail]
+      `SELECT id, email, role FROM admin_users WHERE role = 'super_admin' LIMIT 1`
     );
 
     if (rows.length === 0) {
-      console.log(`\n👤 Creating initial super_admin user: ${adminEmail}...`);
-      const salt = await bcrypt.genSalt(12);
-      const hash = await bcrypt.hash(adminPassword, salt);
+      if (!adminEmail || !adminPassword) {
+        console.log('\nℹ️  No existing super_admin found.');
+        console.log('   To initialize the first administrator, provide:');
+        console.log('   ADMIN_DEFAULT_EMAIL=your-email@binth.in');
+        console.log('   ADMIN_DEFAULT_PASSWORD=<strong-random-password-min-12-chars>\n');
+      } else if (adminPassword.length < 10) {
+        console.error('❌ ADMIN_DEFAULT_PASSWORD must be at least 10 characters long.');
+        await pool.end();
+        process.exit(1);
+      } else {
+        console.log(`\n👤 Provisioning initial super_admin user: ${adminEmail}...`);
+        const salt = await bcrypt.genSalt(12);
+        const hash = await bcrypt.hash(adminPassword, salt);
 
-      await pool.query(
-        `INSERT INTO admin_users (full_name, email, password_hash, role, is_active)
-         VALUES ($1, $2, $3, 'super_admin', true)`,
-        [adminName, adminEmail, hash]
-      );
+        await pool.query(
+          `INSERT INTO admin_users (full_name, email, password_hash, role, is_active)
+           VALUES ($1, $2, $3, 'super_admin', true)
+           ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = 'super_admin'`,
+          [adminName, adminEmail, hash]
+        );
 
-      console.log('✅ Super admin user created successfully!');
-      console.log('──────────────────────────────────────────────────────');
-      console.log(` Email:    ${adminEmail}`);
-      console.log(` Password: ${adminPassword}`);
-      console.log(` Role:     super_admin`);
-      console.log(' ⚠️  Please change this password after initial deployment!');
-      console.log('──────────────────────────────────────────────────────');
+        console.log('✅ Initial super_admin user configured securely.');
+        console.log(`   Email: ${adminEmail}`);
+        console.log('   (Password was securely hashed and not logged.)\n');
+      }
     } else {
-      console.log(`\nℹ️  Admin user "${adminEmail}" already exists. (ID: ${rows[0].id})`);
+      console.log(`\nℹ️  Super admin user already exists (${rows[0].email}).`);
     }
   } catch (err) {
     console.error('❌ Error checking/creating default admin user:', err.message);
+    await pool.end();
     process.exit(1);
   }
 

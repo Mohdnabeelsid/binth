@@ -71,12 +71,13 @@ router.get('/campaigns/active', async (req, res) => {
 
   try {
     // Find the currently active campaign (most recently started)
+    // Campaign rule: NOW() >= start_time AND NOW() < end_time (server time is source of truth)
     const { rows } = await pool.query(
       `SELECT id, title, prize_name AS prize, description, duration_hours AS "durationHours",
               start_time AS "startTime", end_time AS "endTime", status
        FROM campaigns
        WHERE status = 'active'
-         AND NOW() BETWEEN start_time AND end_time
+         AND NOW() >= start_time AND NOW() < end_time
        ORDER BY start_time DESC
        LIMIT 1`
     );
@@ -115,14 +116,14 @@ router.post('/giveaway/visit', trackingLimiter, async (req, res) => {
   const code = sourceCode.trim().toUpperCase();
 
   try {
-    // Verify source exists in our system
+    // Verify source exists in our system and is active
     const { rows: srcRows } = await pool.query(
-      `SELECT 1 FROM sources WHERE code = $1 LIMIT 1`,
+      `SELECT 1 FROM sources WHERE code = $1 AND is_active = true LIMIT 1`,
       [code]
     );
 
     if (!srcRows[0]) {
-      // Don't error — just silently skip unknown codes (direct traffic or URL fiddling)
+      // Silently ignore inactive or unknown codes without erroring
       return res.json({ ok: true, recorded: false });
     }
 
@@ -151,7 +152,7 @@ router.post('/giveaway/start', trackingLimiter, async (req, res) => {
 
   try {
     const { rows: srcRows } = await pool.query(
-      `SELECT 1 FROM sources WHERE code = $1 LIMIT 1`,
+      `SELECT 1 FROM sources WHERE code = $1 AND is_active = true LIMIT 1`,
       [code]
     );
 
@@ -211,11 +212,11 @@ router.post('/giveaway/entries', entryLimiter, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // ── 1. Check for an active campaign ──────────────────────────────────────
+    // ── 1. Check for an active campaign (half-open: now >= start_time AND now < end_time) ───
     const campaignResult = await client.query(
       `SELECT id FROM campaigns
        WHERE status = 'active'
-         AND NOW() BETWEEN start_time AND end_time
+         AND NOW() >= start_time AND NOW() < end_time
        ORDER BY start_time DESC
        LIMIT 1`
     );
@@ -227,7 +228,7 @@ router.post('/giveaway/entries', entryLimiter, async (req, res) => {
 
     const campaignId = campaignResult.rows[0].id;
 
-    // ── 2. Validate source code (strip if unrecognized) ───────────────────────
+    // ── 2. Validate source code (strip if unrecognized or inactive) ───────────
     let sourceCode = null;
     if (rawSourceCode) {
       const srcCheck = await client.query(
@@ -238,31 +239,76 @@ router.post('/giveaway/entries', entryLimiter, async (req, res) => {
     }
 
     // ── 3. Upsert customer (create or update contact, never overwrite consent) ─
-    const customerResult = await client.query(
-      `INSERT INTO customers (parent_name, whatsapp_phone, has_marketing_consent, marketing_consent_at)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (whatsapp_phone) DO UPDATE SET
-         parent_name = EXCLUDED.parent_name,
-         has_marketing_consent = CASE
-           WHEN EXCLUDED.has_marketing_consent = true THEN true
-           ELSE customers.has_marketing_consent
-         END,
-         marketing_consent_at = CASE
-           WHEN EXCLUDED.has_marketing_consent = true AND customers.has_marketing_consent = false
-           THEN NOW()
-           ELSE customers.marketing_consent_at
-         END,
-         updated_at = NOW()
-       RETURNING id`,
-      [
-        parentName,
-        whatsappPhone,
-        marketingConsent,
-        marketingConsent ? 'NOW()' : null
-      ]
+    // ── 3. Upsert customer & maintain explicit consent history ───────────────
+    const existingCustRes = await client.query(
+      `SELECT id, has_marketing_consent, marketing_consent_at, consent_withdrawn_at
+       FROM customers
+       WHERE whatsapp_phone = $1
+       LIMIT 1`,
+      [whatsappPhone]
     );
 
-    const customerId = customerResult.rows[0].id;
+    let customerId;
+    const existingCust = existingCustRes.rows[0];
+
+    if (existingCust) {
+      customerId = existingCust.id;
+      if (marketingConsent) {
+        // Explicit opt-in: grant consent, record timestamp, clear any withdrawal
+        await client.query(
+          `UPDATE customers SET
+             parent_name = $1,
+             has_marketing_consent = true,
+             marketing_consent_at = COALESCE(marketing_consent_at, NOW()),
+             consent_withdrawn_at = NULL,
+             updated_at = NOW()
+           WHERE id = $2`,
+          [parentName, customerId]
+        );
+
+        await client.query(
+          `INSERT INTO customer_consent_history
+             (customer_id, consent_status, source_code, campaign_id, client_ip_hash, user_agent)
+           VALUES ($1, 'opted_in', $2, $3, $4, $5)`,
+          [customerId, sourceCode, campaignId, ipHash, userAgent]
+        );
+      } else {
+        // No consent on this submission:
+        // Update contact details without falsely erasing prior explicit opt-in history
+        await client.query(
+          `UPDATE customers SET
+             parent_name = $1,
+             updated_at = NOW()
+           WHERE id = $2`,
+          [parentName, customerId]
+        );
+
+        if (!existingCust.has_marketing_consent) {
+          await client.query(
+            `INSERT INTO customer_consent_history
+               (customer_id, consent_status, source_code, campaign_id, client_ip_hash, user_agent)
+             VALUES ($1, 'opted_out', $2, $3, $4, $5)`,
+            [customerId, sourceCode, campaignId, ipHash, userAgent]
+          );
+        }
+      }
+    } else {
+      // New customer: create record with initial consent state
+      const newCustRes = await client.query(
+        `INSERT INTO customers (parent_name, whatsapp_phone, has_marketing_consent, marketing_consent_at)
+         VALUES ($1, $2, $3, CASE WHEN $3 = true THEN NOW() ELSE NULL END)
+         RETURNING id`,
+        [parentName, whatsappPhone, marketingConsent]
+      );
+      customerId = newCustRes.rows[0].id;
+
+      await client.query(
+        `INSERT INTO customer_consent_history
+           (customer_id, consent_status, source_code, campaign_id, client_ip_hash, user_agent)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [customerId, marketingConsent ? 'opted_in' : 'opted_out', sourceCode, campaignId, ipHash, userAgent]
+      );
+    }
 
     // ── 4. Duplicate entry check: 1 entry per participant per campaign ─────────
     const duplicateCheck = await client.query(

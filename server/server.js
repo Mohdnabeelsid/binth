@@ -31,23 +31,63 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 // Needed for correct req.ip in rate limiters and audit logs
 app.set('trust proxy', 1);
 
+// ─── Production Environment Security Validation ───────────────────────────
+if (NODE_ENV === 'production') {
+  const missingSecrets = [];
+  if (!process.env.DATABASE_URL) {
+    missingSecrets.push('DATABASE_URL');
+  }
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32 || process.env.JWT_SECRET.includes('replace_this')) {
+    missingSecrets.push('JWT_SECRET (must be at least 32 characters of high-entropy secret)');
+  }
+  if (!process.env.IP_HASH_SALT || process.env.IP_HASH_SALT.includes('replace_this')) {
+    missingSecrets.push('IP_HASH_SALT (must be set for secure pseudonymization)');
+  }
+  if (missingSecrets.length > 0) {
+    console.error('FATAL: Startup aborted due to missing/insecure production configuration:\n - ' + missingSecrets.join('\n - '));
+    process.exit(1);
+  }
+}
+
 // ─── Security & Parsing Middleware ─────────────────────────────────────────
 
-// CORS configuration
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-  : ['*'];
+// CORS configuration: strictly enforce allowlist, never combine wildcard with credentials
+const configuredOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const defaultDevOrigins = ['http://localhost:3000', 'http://localhost:8000', 'http://127.0.0.1:3000', 'http://127.0.0.1:8000'];
+const allowedOrigins = configuredOrigins.length > 0
+  ? configuredOrigins
+  : (NODE_ENV === 'production' ? [] : defaultDevOrigins);
+
+const allowAllOrigins = allowedOrigins.includes('*');
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, curl, same-origin static)
-      if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      // 1. Requests with no origin header (curl, mobile apps, same-process static)
+      if (!origin) {
         return callback(null, true);
       }
-      return callback(null, true);
+
+      // 2. Wildcard mode (strictly non-credentialed)
+      if (allowAllOrigins) {
+        return callback(null, true);
+      }
+
+      // 3. Explicit allowlist check
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // 4. Reject disallowed origin
+      const corsError = new Error(`Origin ${origin} is not allowed by CORS.`);
+      corsError.status = 403;
+      return callback(corsError, false);
     },
-    credentials: true,
+    credentials: !allowAllOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
   })

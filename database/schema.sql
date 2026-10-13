@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS customers (
   location_district VARCHAR(100) DEFAULT 'Kerala',
   has_marketing_consent BOOLEAN NOT NULL DEFAULT false,
   marketing_consent_at TIMESTAMPTZ,
+  consent_withdrawn_at TIMESTAMPTZ,
   is_purchaser BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -120,6 +121,26 @@ CREATE TABLE IF NOT EXISTS customers (
 CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(whatsapp_phone);
 CREATE INDEX IF NOT EXISTS idx_customers_marketing ON customers(has_marketing_consent);
 CREATE INDEX IF NOT EXISTS idx_customers_purchaser ON customers(is_purchaser);
+
+-- ============================================================================
+-- 5b. Customer Consent Audit Trail
+-- Preserves explicit opt-in, decline, and withdrawal events over time.
+-- A later entry without consent cannot silently erase prior consent history,
+-- and marketing eligibility respects the latest explicit consent state.
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS customer_consent_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  consent_status VARCHAR(20) NOT NULL CHECK (consent_status IN ('opted_in', 'opted_out', 'withdrawn')),
+  source_code VARCHAR(35) REFERENCES sources(code) ON DELETE SET NULL,
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE SET NULL,
+  client_ip_hash VARCHAR(64),
+  user_agent TEXT,
+  recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_consent_history_customer ON customer_consent_history(customer_id, recorded_at DESC);
 
 -- ============================================================================
 -- 6. Participant Giveaway Entries
@@ -177,6 +198,7 @@ CREATE TABLE IF NOT EXISTS winners (
   campaign_id UUID NOT NULL REFERENCES campaigns(id) ON DELETE RESTRICT,
   entry_id UUID NOT NULL REFERENCES entries(id) ON DELETE RESTRICT,
   customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
+  status VARCHAR(20) NOT NULL DEFAULT 'official' CHECK (status IN ('official', 'superseded', 'disqualified')),
   selection_reason TEXT NOT NULL DEFAULT 'Official closing random draw',
   drawn_by_user_id UUID REFERENCES admin_users(id) ON DELETE SET NULL,
   selection_hash VARCHAR(64) NOT NULL, -- SHA-256 hash of selection entropy
@@ -186,6 +208,7 @@ CREATE TABLE IF NOT EXISTS winners (
 
 CREATE INDEX IF NOT EXISTS idx_winners_campaign ON winners(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_winners_entry ON winners(entry_id);
+CREATE INDEX IF NOT EXISTS idx_winners_status ON winners(campaign_id, status);
 
 -- ============================================================================
 -- 9. System Audit Logs
@@ -305,14 +328,4 @@ VALUES (
   NOW() + INTERVAL '48 hours',
   'active'
 ) ON CONFLICT DO NOTHING;
-
--- Initial Super Admin Seed (Email: admin@binth.in / Password: BinthAdmin2026!)
-INSERT INTO admin_users (full_name, email, password_hash, role, is_active)
-VALUES (
-  'BINTH Administrator',
-  'admin@binth.in',
-  '$2a$10$UNuPXFLXiEHkTIIVWE/eOe3PhXliF.fpHQdOagIOxX4pA2hCHaLzS',
-  'super_admin',
-  true
-) ON CONFLICT (email) DO NOTHING;
 

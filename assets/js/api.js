@@ -72,7 +72,7 @@ async function apiRequest(endpoint, options = {}) {
       return {
         ok: false,
         status: response.status,
-        error: (responseData && responseData.message) || response.statusText || `HTTP ${response.status}`,
+        error: (responseData && (responseData.error || responseData.message)) || response.statusText || `HTTP ${response.status}`,
         data: responseData
       };
     }
@@ -100,6 +100,33 @@ export const Api = {
    */
   async checkHealth() {
     return await apiRequest('/health', { method: 'GET' });
+  },
+
+  /**
+   * Staff Auth: Authenticate admin user and acquire JWT
+   * Endpoint: POST /api/auth/login
+   */
+  async login(email, password) {
+    return await apiRequest('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+  },
+
+  /**
+   * Staff Auth: Fetch authenticated profile and verify token
+   * Endpoint: GET /api/auth/me
+   */
+  async getMe() {
+    return await apiRequest('/auth/me', { method: 'GET' });
+  },
+
+  /**
+   * Staff Auth: Terminate session
+   * Endpoint: POST /api/auth/logout
+   */
+  async logout() {
+    return await apiRequest('/auth/logout', { method: 'POST' });
   },
 
   /**
@@ -201,6 +228,27 @@ export const Api = {
   async getCustomers(params = {}) {
     const query = new URLSearchParams(params).toString();
     return await apiRequest(`/admin/customers${query ? `?${query}` : ''}`, { method: 'GET' });
+  },
+
+  /**
+   * Admin: Explicitly withdraw marketing consent for a customer
+   * Endpoint: POST /api/admin/customers/:id/withdraw-consent
+   */
+  async withdrawCustomerConsent(customerId, reason = 'Customer request') {
+    return await apiRequest(`/admin/customers/${encodeURIComponent(customerId)}/withdraw-consent`, {
+      method: 'POST',
+      body: JSON.stringify({ reason })
+    });
+  },
+
+  /**
+   * Admin: Fetch audit history of consent events for a customer
+   * Endpoint: GET /api/admin/customers/:id/consent-history
+   */
+  async getCustomerConsentHistory(customerId) {
+    return await apiRequest(`/admin/customers/${encodeURIComponent(customerId)}/consent-history`, {
+      method: 'GET'
+    });
   },
 
   /**

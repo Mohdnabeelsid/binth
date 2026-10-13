@@ -52,11 +52,12 @@ export const Validation = {
    * Allowed: '5–7', '8–10', '11–13', '14–16'
    */
   validateAgeRange(value) {
-    const allowed = ['5–7', '8–10', '11–13', '14–16'];
-    if (!value || !allowed.includes(value)) {
+    const allowed = ['5-7', '8-10', '11-13', '14-16'];
+    const normalized = (value || '').replace(/[\u2013\u2014]/g, '-').trim();
+    if (!normalized || !allowed.includes(normalized)) {
       return { valid: false, message: 'Please select an age range for her.' };
     }
-    return { valid: true, value };
+    return { valid: true, value: normalized };
   },
 
   /**

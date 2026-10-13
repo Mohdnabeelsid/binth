@@ -37,23 +37,31 @@ const SUPER_ONLY = ['super_admin'];
  */
 function maskPhone(phone) {
   if (!phone) return '—';
-  const digits = phone.replace(/\D/g, '');
+  let digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('91') && digits.length === 12) {
+    digits = digits.slice(2);
+  }
   return digits.slice(0, 4) + '******';
 }
 
 /**
- * Write to the audit log table. Fire-and-forget — don't let logging failures
- * break the main request flow.
+ * Write to the audit log table.
+ * If a transactional dbClient is provided, executes within that transaction
+ * and throws on failure to guarantee atomicity with critical business actions.
  */
-async function writeAuditLog(adminUserId, action, entityType, entityId, oldData = null, newData = null, ip = null) {
+async function writeAuditLog(adminUserId, action, entityType, entityId, oldData = null, newData = null, ip = null, dbClient = null) {
+  const runner = dbClient || pool;
   try {
-    await pool.query(
+    await runner.query(
       `INSERT INTO audit_logs (admin_user_id, action, entity_type, entity_id, old_data, new_data, ip_address)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [adminUserId, action, entityType, String(entityId), oldData ? JSON.stringify(oldData) : null, newData ? JSON.stringify(newData) : null, ip]
     );
   } catch (err) {
     console.error('[Audit] Write failed:', err.message);
+    if (dbClient) {
+      throw err;
+    }
   }
 }
 
@@ -87,21 +95,30 @@ router.get('/campaigns', async (req, res) => {
          c.id, c.title, c.prize_name AS prize, c.description, c.status,
          c.start_time AS "startTime", c.end_time AS "endTime", c.duration_hours AS "durationHours",
          c.created_at AS "createdAt",
-         COUNT(e.id) AS "totalEntries",
-         COALESCE(MAX(se_counts.visits), 0) AS "qrVisits",
+         COALESCE(e.total_entries, 0) AS "totalEntries",
+         COALESCE(se.visits, 0) AS "qrVisits",
          CASE
-           WHEN COALESCE(MAX(se_counts.visits), 0) > 0
-           THEN ROUND((COUNT(e.id)::numeric / MAX(se_counts.visits)::numeric) * 100.0, 1)
+           WHEN COALESCE(se.visits, 0) > 0
+           THEN ROUND((COALESCE(e.total_entries, 0)::numeric / se.visits::numeric) * 100.0, 1)
            ELSE 0
          END AS "conversionRate"
        FROM campaigns c
-       LEFT JOIN entries e ON e.campaign_id = c.id
-       LEFT JOIN LATERAL (
-         SELECT SUM(CASE WHEN event_type = 'visit' THEN 1 ELSE 0 END) AS visits
-         FROM source_events
-       ) se_counts ON true
+       LEFT JOIN (
+         SELECT campaign_id, COUNT(*) AS total_entries
+         FROM entries
+         GROUP BY campaign_id
+       ) e ON e.campaign_id = c.id
+       LEFT JOIN (
+         SELECT 
+           c2.id AS campaign_id,
+           COUNT(se2.id) AS visits
+         FROM campaigns c2
+         LEFT JOIN source_events se2 ON se2.event_type = 'visit' 
+           AND se2.created_at >= c2.start_time 
+           AND se2.created_at < c2.end_time
+         GROUP BY c2.id
+       ) se ON se.campaign_id = c.id
        ${where}
-       GROUP BY c.id
        ORDER BY c.start_time DESC`,
       params
     );
@@ -186,38 +203,58 @@ router.put('/campaigns/:id', requireRole(WRITE_ROLES), async (req, res) => {
 // ─── POST /api/admin/campaigns/:id/close ───────────────────────────────────
 router.post('/campaigns/:id/close', requireRole(WRITE_ROLES), async (req, res) => {
   const { id } = req.params;
+  const client = await pool.connect();
   try {
-    const { rows } = await pool.query(
-      `UPDATE campaigns SET status = 'closed', updated_at = NOW()
-       WHERE id = $1 AND status != 'closed'
-       RETURNING id, title, status`,
+    await client.query('BEGIN');
+
+    const checkRes = await client.query(
+      `SELECT id, title, status FROM campaigns WHERE id = $1 FOR UPDATE`,
       [id]
     );
 
-    if (!rows[0]) {
-      return res.status(404).json({ ok: false, error: 'Campaign not found or already closed.' });
+    if (!checkRes.rows[0]) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ ok: false, error: 'Campaign not found.' });
     }
 
-    await writeAuditLog(req.user.id, 'campaign.close', 'campaign', id, null, rows[0], req.ip);
-    res.json({ ok: true, message: 'Campaign closed.', campaign: rows[0] });
+    if (checkRes.rows[0].status === 'closed') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ ok: false, error: 'Campaign is already closed.' });
+    }
+
+    const { rows } = await client.query(
+      `UPDATE campaigns SET status = 'closed', updated_at = NOW()
+       WHERE id = $1
+       RETURNING id, title, status, end_time AS "endTime"`,
+      [id]
+    );
+
+    // Atomically persist required administrative audit record within transaction
+    await writeAuditLog(req.user.id, 'campaign.close', 'campaign', id, checkRes.rows[0], rows[0], req.ip, client);
+
+    await client.query('COMMIT');
+    res.json({ ok: true, message: 'Campaign closed successfully.', campaign: rows[0] });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('[Admin] POST /campaigns/:id/close error:', err.message);
     res.status(500).json({ ok: false, error: 'Error closing campaign.' });
+  } finally {
+    client.release();
   }
 });
 
 // ─── POST /api/admin/campaigns/:id/select-winner ───────────────────────────
 router.post('/campaigns/:id/select-winner', requireRole(WRITE_ROLES), async (req, res) => {
   const { id } = req.params;
-  const { reason = 'Official closing random draw' } = req.body || {};
+  const { reason = 'Official closing random draw', isReroll = false, rerollReason = '' } = req.body || {};
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    // Fetch campaign
+    // 1. Fetch and lock campaign row to prevent concurrent draws
     const campResult = await client.query(
-      `SELECT id, title, status FROM campaigns WHERE id = $1 LIMIT 1`,
+      `SELECT id, title, status, start_time, end_time FROM campaigns WHERE id = $1 FOR UPDATE`,
       [id]
     );
 
@@ -228,22 +265,57 @@ router.post('/campaigns/:id/select-winner', requireRole(WRITE_ROLES), async (req
 
     const campaign = campResult.rows[0];
 
-    // Block on active campaigns unless the caller is super_admin
-    if (campaign.status === 'active' && req.user.role !== 'super_admin') {
+    // INVARIANT: Winner cannot be selected until campaign is closed and entry pool is frozen
+    // No role bypass — campaign MUST be closed
+    if (campaign.status !== 'closed') {
       await client.query('ROLLBACK');
       return res.status(400).json({
         ok: false,
-        error: 'Campaign is currently active. Close the campaign before drawing a winner, or use a Super Admin account to override.'
+        error: 'Campaign must be closed before selecting a winner. Active or open campaigns cannot have winners selected.'
       });
     }
 
-    // Fetch all eligible entries
+    // 2. Check for existing winner selection
+    const priorWinners = await client.query(
+      `SELECT id, entry_id, customer_id, drawn_at FROM winners WHERE campaign_id = $1 ORDER BY drawn_at DESC`,
+      [id]
+    );
+
+    if (priorWinners.rows.length > 0) {
+      if (!isReroll) {
+        await client.query('ROLLBACK');
+        return res.status(409).json({
+          ok: false,
+          error: 'An official winner has already been selected for this campaign. An authorized reroll with reason is required.'
+        });
+      }
+
+      // Reroll authorization: Only super_admin can authorize a reroll
+      if (req.user.role !== 'super_admin') {
+        await client.query('ROLLBACK');
+        return res.status(403).json({
+          ok: false,
+          error: 'Access denied. Only a Super Administrator is authorized to perform a winner reroll.'
+        });
+      }
+
+      if (!rerollReason || typeof rerollReason !== 'string' || rerollReason.trim().length < 5) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          ok: false,
+          error: 'An explicit reroll reason of at least 5 characters is required (e.g., "Winner disqualified" or "Unresponsive contact").'
+        });
+      }
+    }
+
+    // 3. Fetch all eligible entries in deterministic order
     const eligibleResult = await client.query(
       `SELECT e.id AS entry_id, e.entry_code, e.customer_id,
               c.parent_name, c.whatsapp_phone
        FROM entries e
        JOIN customers c ON c.id = e.customer_id
-       WHERE e.campaign_id = $1 AND e.is_eligible = true`,
+       WHERE e.campaign_id = $1 AND e.is_eligible = true
+       ORDER BY e.submitted_at ASC, e.id ASC`,
       [id]
     );
 
@@ -255,50 +327,79 @@ router.post('/campaigns/:id/select-winner', requireRole(WRITE_ROLES), async (req
       });
     }
 
-    // ── Cryptographic Server-Side Winner Selection (CSPRNG) ──────────────────
-    // Uses crypto.randomInt which reads from OS CSPRNG — never Math.random().
+    // 4. Cryptographic Server-Side Winner Selection (CSPRNG via crypto.randomInt)
+    // Never uses Math.random()
     const candidates = eligibleResult.rows;
     const selectedIndex = crypto.randomInt(0, candidates.length);
     const winner = candidates[selectedIndex];
 
-    // Build cryptographic audit hash
+    // 5. Build reproducible selection entropy audit hash
     const entropyHex = crypto.randomBytes(32).toString('hex');
+    const drawTimestamp = new Date().toISOString();
     const selectionHash = crypto.createHash('sha256')
-      .update(`${id}:${winner.entry_id}:${entropyHex}:${new Date().toISOString()}`)
+      .update(`${id}:${winner.entry_id}:${selectedIndex}:${candidates.length}:${entropyHex}:${drawTimestamp}`)
       .digest('hex');
 
     const auditMetadata = {
       totalCandidates: candidates.length,
       selectedIndex,
-      serverTimestamp: new Date().toISOString(),
-      campaignStatus: campaign.status
+      serverTimestamp: drawTimestamp,
+      drawnByUserId: req.user.id,
+      drawnByEmail: req.user.email,
+      isReroll: !!isReroll,
+      rerollReason: isReroll ? rerollReason.trim() : null,
+      priorWinnerCount: priorWinners.rows.length
     };
 
-    // Insert into winners ledger
+    const finalReason = isReroll ? `REROLL: ${rerollReason.trim()}` : reason;
+
+    // If performing an authorized reroll, supersede existing official winners
+    if (isReroll) {
+      await client.query(
+        `UPDATE winners SET status = 'superseded' WHERE campaign_id = $1 AND status = 'official'`,
+        [id]
+      );
+    }
+
+    // 6. Insert into winners ledger (preserving all prior draw history)
     await client.query(
       `INSERT INTO winners
-         (campaign_id, entry_id, customer_id, selection_reason, drawn_by_user_id, selection_hash, audit_metadata)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [id, winner.entry_id, winner.customer_id, reason, req.user.id, selectionHash, JSON.stringify(auditMetadata)]
+         (campaign_id, entry_id, customer_id, status, selection_reason, drawn_by_user_id, selection_hash, audit_metadata, drawn_at)
+       VALUES ($1, $2, $3, 'official', $4, $5, $6, $7, NOW())`,
+      [id, winner.entry_id, winner.customer_id, finalReason, req.user.id, selectionHash, JSON.stringify(auditMetadata)]
     );
 
-    // Write audit log
+    // 7. Atomically write audit log within the transaction
     await writeAuditLog(
-      req.user.id, 'winner.select', 'campaign', id,
-      null,
-      { entryCode: winner.entry_code, entryId: winner.entry_id, selectionHash, candidateCount: candidates.length },
-      req.ip
+      req.user.id,
+      isReroll ? 'winner.reroll' : 'winner.select',
+      'campaign',
+      id,
+      priorWinners.rows[0] || null,
+      {
+        entryCode: winner.entry_code,
+        entryId: winner.entry_id,
+        selectionHash,
+        candidateCount: candidates.length,
+        isReroll: !!isReroll,
+        rerollReason: isReroll ? rerollReason.trim() : null
+      },
+      req.ip,
+      client
     );
 
     await client.query('COMMIT');
 
+    // Return winner details with masked phone (never expose raw phone to browser)
     res.json({
       ok: true,
       winnerName: winner.parent_name,
+      phoneMasked: maskPhone(winner.whatsapp_phone),
       entryCode: winner.entry_code,
-      drawnAt: new Date().toISOString(),
+      drawnAt: drawTimestamp,
       auditHash: selectionHash,
-      totalCandidates: candidates.length
+      totalCandidates: candidates.length,
+      isReroll: !!isReroll
     });
 
   } catch (err) {
@@ -410,6 +511,84 @@ router.get('/customers', async (req, res) => {
   }
 });
 
+// ─── POST /api/admin/customers/:id/withdraw-consent ────────────────────────
+router.post('/customers/:id/withdraw-consent', requireRole(WRITE_ROLES), async (req, res) => {
+  const { id } = req.params;
+  const { reason = 'Customer request' } = req.body || {};
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const custCheck = await client.query(
+      `SELECT id, parent_name, whatsapp_phone, has_marketing_consent, marketing_consent_at
+       FROM customers WHERE id = $1 FOR UPDATE`,
+      [id]
+    );
+
+    if (!custCheck.rows[0]) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ ok: false, error: 'Customer not found.' });
+    }
+
+    const customer = custCheck.rows[0];
+
+    await client.query(
+      `UPDATE customers SET
+         has_marketing_consent = false,
+         consent_withdrawn_at = NOW(),
+         updated_at = NOW()
+       WHERE id = $1`,
+      [id]
+    );
+
+    await client.query(
+      `INSERT INTO customer_consent_history
+         (customer_id, consent_status, user_agent)
+       VALUES ($1, 'withdrawn', $2)`,
+      [id, `Admin withdrawal by ${req.user.email}: ${reason}`]
+    );
+
+    await writeAuditLog(
+      req.user.id,
+      'customer.consent_withdraw',
+      'customer',
+      id,
+      { has_marketing_consent: customer.has_marketing_consent },
+      { has_marketing_consent: false, reason },
+      req.ip,
+      client
+    );
+
+    await client.query('COMMIT');
+    res.json({ ok: true, message: 'Marketing consent successfully withdrawn.' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('[Admin] POST /customers/:id/withdraw-consent error:', err.message);
+    res.status(500).json({ ok: false, error: 'Error withdrawing consent.' });
+  } finally {
+    client.release();
+  }
+});
+
+// ─── GET /api/admin/customers/:id/consent-history ──────────────────────────
+router.get('/customers/:id/consent-history', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, consent_status, source_code, campaign_id, recorded_at
+       FROM customer_consent_history
+       WHERE customer_id = $1
+       ORDER BY recorded_at DESC`,
+      [id]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('[Admin] GET /customers/:id/consent-history error:', err.message);
+    res.status(500).json({ ok: false, error: 'Error fetching consent history.' });
+  }
+});
+
 // ─── GET /api/admin/sources ────────────────────────────────────────────────
 router.get('/sources', async (req, res) => {
   try {
@@ -421,6 +600,11 @@ router.get('/sources', async (req, res) => {
          COALESCE(st.starts, 0) AS starts,
          COALESCE(e.entries, 0) AS entries,
          COALESCE(e.eligible, 0) AS eligible,
+         CASE
+           WHEN COALESCE(v.visits, 0) > 0
+           THEN ROUND((COALESCE(e.entries, 0)::numeric / v.visits::numeric) * 100.0, 1)
+           ELSE 0.0
+         END AS "conversionRate",
          s.created_at AS "createdAt"
        FROM sources s
        LEFT JOIN (
@@ -536,8 +720,8 @@ router.patch('/sources/:code/status', requireRole(WRITE_ROLES), async (req, res)
   }
 });
 
-// ─── DELETE /api/admin/sources/:code ───────────────────────────────────────
-router.delete('/sources/:code', requireRole(WRITE_ROLES), async (req, res) => {
+// ─── DELETE /api/admin/sources/:code (Super Admin Only) ────────────────────
+router.delete('/sources/:code', requireRole(SUPER_ONLY), async (req, res) => {
   const { code } = req.params;
 
   try {
@@ -589,14 +773,34 @@ router.get('/export', requireRole(SUPER_ONLY), async (req, res) => {
       );
       rows = result.rows;
       csvHeader = 'Entry Code,Parent Name,Source Code,Age Range,Eligible,Marketing Consent,Submitted At\n';
+    } else if (type === 'customers') {
+      const result = await pool.query(
+        `SELECT c.parent_name, c.whatsapp_phone, c.location_district,
+                c.has_marketing_consent, c.marketing_consent_at, c.created_at
+         FROM customers c
+         ORDER BY c.created_at DESC`
+      );
+      rows = result.rows.map(r => ({
+        parent_name: r.parent_name,
+        phone: maskPhone(r.whatsapp_phone),
+        location: r.location_district,
+        marketing_consent: r.has_marketing_consent ? 'Yes' : 'No',
+        consent_at: r.marketing_consent_at ? new Date(r.marketing_consent_at).toISOString() : '',
+        created_at: r.created_at ? new Date(r.created_at).toISOString() : ''
+      }));
+      csvHeader = 'Parent Name,Phone (Masked),Location,Marketing Consent,Consent Timestamp,Created At\n';
     } else {
-      return res.status(400).json({ ok: false, error: `Unknown export type: "${type}". Supported: source_performance, entries.` });
+      return res.status(400).json({ ok: false, error: `Unknown export type: "${type}". Supported: source_performance, entries, customers.` });
     }
 
-    // Escape CSV cell: wrap in double quotes, escape internal double quotes
+    // Escape CSV cell: wrap in double quotes, escape internal double quotes,
+    // and neutralize formula injection (cells starting with =, +, -, @, tab, newline)
     const escape = (val) => {
-      if (val === null || val === undefined) return '';
-      const str = String(val);
+      if (val === null || val === undefined) return '""';
+      let str = String(val);
+      if (/^[=+\-@\t\r]/.test(str)) {
+        str = `'${str}`;
+      }
       return `"${str.replace(/"/g, '""')}"`;
     };
 

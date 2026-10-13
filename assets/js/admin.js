@@ -15,7 +15,8 @@ export const ROLES = {
 };
 
 export const AdminState = {
-  currentRole: sessionStorage.getItem('binth_admin_role') || ROLES.SUPER_ADMIN,
+  currentRole: sessionStorage.getItem('binth_admin_role') || ROLES.VIEWER,
+  currentUser: null,
   apiConnected: false,
   activeLocations: []
 };
@@ -45,8 +46,165 @@ document.addEventListener('DOMContentLoaded', async () => {
   initGlobalActionInterception();
   initApiStatus();
   await checkBackendConnection();
-  await initPageSpecificLogic();
+  const authenticated = await initAuthentication();
+  if (authenticated) {
+    await initPageSpecificLogic();
+  }
 });
+
+/**
+ * Staff Authentication & Session Initialization
+ */
+export async function initAuthentication() {
+  const token = sessionStorage.getItem('binth_auth_token');
+  if (token) {
+    const meRes = await Api.getMe();
+    if (meRes.ok && meRes.data && meRes.data.user) {
+      AdminState.currentUser = meRes.data.user;
+      AdminState.currentRole = meRes.data.user.role;
+      sessionStorage.setItem('binth_admin_role', meRes.data.user.role);
+      renderUserStatusInSidebar();
+      applyRolePermissions();
+      hideLoginModal();
+      return true;
+    } else {
+      sessionStorage.removeItem('binth_auth_token');
+      sessionStorage.removeItem('binth_admin_role');
+      AdminState.currentUser = null;
+    }
+  }
+
+  showLoginModal();
+  return false;
+}
+
+function showLoginModal() {
+  let modal = document.getElementById('adminLoginModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'adminLoginModal';
+    modal.className = 'modal-backdrop active';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'adminLoginTitle');
+    modal.innerHTML = `
+      <div class="modal-dialog" style="max-width: 440px;">
+        <div class="modal-header">
+          <h3 id="adminLoginTitle" class="modal-title">🔐 Staff Authentication</h3>
+        </div>
+        <div class="modal-body" style="padding: var(--space-lg);">
+          <p class="text-muted" style="font-size: 0.9rem; margin-bottom: var(--space-md);">
+            Please sign in with your staff account to access the BINTH management portal.
+          </p>
+          <div id="loginErrorAlert" class="alert alert-danger" style="display: none; margin-bottom: var(--space-md);"></div>
+          <form id="adminLoginForm">
+            <div class="form-group" style="margin-bottom: var(--space-md);">
+              <label class="form-label" for="loginEmailInput">Email Address</label>
+              <input type="email" id="loginEmailInput" class="form-input" required placeholder="admin@binth.in" autocomplete="username">
+            </div>
+            <div class="form-group" style="margin-bottom: var(--space-lg);">
+              <label class="form-label" for="loginPasswordInput">Password</label>
+              <input type="password" id="loginPasswordInput" class="form-input" required placeholder="••••••••••••" autocomplete="current-password">
+            </div>
+            <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width: 100%;">
+              Sign In to Management Portal
+            </button>
+          </form>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const form = document.getElementById('adminLoginForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmailInput').value.trim();
+      const password = document.getElementById('loginPasswordInput').value;
+      const submitBtn = document.getElementById('loginSubmitBtn');
+      const errorAlert = document.getElementById('loginErrorAlert');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Authenticating...';
+      errorAlert.style.display = 'none';
+
+      const res = await Api.login(email, password);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign In to Management Portal';
+
+      if (res.ok && res.data && res.data.token) {
+        sessionStorage.setItem('binth_auth_token', res.data.token);
+        sessionStorage.setItem('binth_admin_role', res.data.user.role);
+        AdminState.currentUser = res.data.user;
+        AdminState.currentRole = res.data.user.role;
+        hideLoginModal();
+        renderUserStatusInSidebar();
+        applyRolePermissions();
+        await initPageSpecificLogic();
+      } else {
+        errorAlert.style.display = 'block';
+        errorAlert.textContent = res.error || 'Authentication failed. Please check your credentials.';
+      }
+    });
+  } else {
+    modal.classList.add('active');
+  }
+}
+
+function hideLoginModal() {
+  const modal = document.getElementById('adminLoginModal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+}
+
+function renderUserStatusInSidebar() {
+  const roleDisplay = document.getElementById('sidebarCurrentRole');
+  if (roleDisplay) {
+    roleDisplay.textContent = formatRole(AdminState.currentRole);
+  }
+
+  const roleSelect = document.getElementById('roleSwitcherSelect');
+  if (roleSelect) {
+    roleSelect.value = AdminState.currentRole;
+  }
+
+  // Render or update authenticated user badge & Sign Out button in sidebar footer
+  const footer = document.querySelector('.sidebar-footer');
+  if (footer && AdminState.currentUser) {
+    let authBox = document.getElementById('sidebarAuthUserBox');
+    if (!authBox) {
+      authBox = document.createElement('div');
+      authBox.id = 'sidebarAuthUserBox';
+      authBox.style.cssText = 'margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--color-border-subtle); font-size: 0.8rem;';
+      footer.appendChild(authBox);
+    }
+    authBox.innerHTML = `
+      <div style="font-weight: 600; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        👤 ${escapeHtml(AdminState.currentUser.name || AdminState.currentUser.email)}
+      </div>
+      <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 6px;">
+        ${escapeHtml(AdminState.currentUser.email)}
+      </div>
+      <button id="adminLogoutBtn" class="btn btn-outline btn-sm" style="width: 100%; padding: 4px 8px; font-size: 0.75rem;">
+        Sign Out
+      </button>
+    `;
+
+    const logoutBtn = document.getElementById('adminLogoutBtn');
+    if (logoutBtn && !logoutBtn._bound) {
+      logoutBtn._bound = true;
+      logoutBtn.addEventListener('click', async () => {
+        await Api.logout().catch(() => {});
+        sessionStorage.removeItem('binth_auth_token');
+        sessionStorage.removeItem('binth_admin_role');
+        AdminState.currentUser = null;
+        AdminState.currentRole = ROLES.VIEWER;
+        applyRolePermissions();
+        showLoginModal();
+      });
+    }
+  }
+}
 
 /**
  * Mobile Sidebar Drawer
@@ -475,25 +633,39 @@ function initWinnerModalHandlers() {
       const campaignStatus = submitDrawBtn.dataset.campaignStatus;
       const reason = document.getElementById('winnerDrawReason').value || 'Official campaign close random draw';
 
-      if (campaignStatus === 'active') {
-        if (!confirm('CAUTION: This campaign is currently ACTIVE. Drawing a winner prematurely will conclude the 48-hour cycle early. Are you sure you wish to proceed?')) {
-          return;
-        }
-      } else {
-        if (!confirm('Are you sure you want to request server-side winner selection for this campaign?')) {
-          return;
-        }
+      if (campaignStatus !== 'closed') {
+        alert('Campaign must be closed before selecting a winner. Please close the campaign first.');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to execute cryptographically secure server-side winner selection for this closed campaign?')) {
+        return;
       }
 
       submitDrawBtn.disabled = true;
-      submitDrawBtn.textContent = 'Processing with server...';
+      submitDrawBtn.textContent = 'Selecting winner via server...';
 
-      const result = await Api.selectWinner(campaignId, { reason });
+      let result = await Api.selectWinner(campaignId, { reason });
+
+      // If winner already drawn, prompt for authorized reroll if user is super_admin
+      if (!result.ok && result.status === 409 && AdminState.currentRole === ROLES.SUPER_ADMIN) {
+        const rerollConfirm = confirm('A winner has already been selected for this campaign.\n\nAs a Super Administrator, do you wish to execute an authorized REROLL?');
+        if (rerollConfirm) {
+          const rerollReason = prompt('Please enter the documented reason for this reroll (e.g., "Winner unresponsive after 48h" or "Entry disqualified"):');
+          if (rerollReason && rerollReason.trim().length >= 5) {
+            result = await Api.selectWinner(campaignId, { reason, isReroll: true, rerollReason: rerollReason.trim() });
+          } else if (rerollReason !== null) {
+            alert('Reroll reason must be at least 5 characters long.');
+          }
+        }
+      }
+
       submitDrawBtn.disabled = false;
       submitDrawBtn.textContent = 'Execute Selection (Server)';
 
       if (result.ok && result.data) {
-        alert(`Winner selected: ${result.data.winnerName || 'Participant'} (${result.data.entryCode || ''})`);
+        const rerollTag = result.data.isReroll ? ' [REROLL]' : '';
+        alert(`🎉 Winner Selected${rerollTag}!\n\nWinner: ${result.data.winnerName || 'Participant'}\nEntry Code: ${result.data.entryCode || ''}\nPhone: ${result.data.phoneMasked || ''}\nEligible Candidates: ${result.data.totalCandidates}\nAudit Hash: ${result.data.auditHash.slice(0, 16)}...`);
         modal.classList.remove('active');
         await fetchCampaignsData();
       } else {
@@ -514,7 +686,7 @@ window.openWinnerModal = function(campaignId, campaignTitle, status) {
     submitBtn.dataset.campaignStatus = status || '';
   }
 
-  // Contextual status alert inside modal
+  // Contextual status alert inside modal enforcing closed campaign invariant
   let statusNotice = document.getElementById('winnerModalStatusNotice');
   if (!statusNotice && modal) {
     statusNotice = document.createElement('div');
@@ -527,25 +699,28 @@ window.openWinnerModal = function(campaignId, campaignTitle, status) {
   }
 
   if (statusNotice) {
-    if (status === 'active') {
+    if (status !== 'closed') {
       statusNotice.className = 'alert alert-danger';
       statusNotice.style.display = 'block';
       statusNotice.innerHTML = `
-        <strong>⚠️ Campaign is currently ACTIVE:</strong><br>
-        Entry submission is live. Drawing a winner now will terminate the 48-hour cycle early.
+        <strong>⛔ Campaign is currently ${escapeHtml(status ? status.toUpperCase() : 'ACTIVE')}:</strong><br>
+        Under strict platform rules, official winner draws are <strong>only permitted after the campaign is closed</strong> and the participant pool is stable.
+        Please close the campaign first before selecting a winner.
       `;
-      if (submitBtn) submitBtn.textContent = 'Execute Selection (Active Campaign)';
-    } else if (status === 'draft') {
-      statusNotice.className = 'alert alert-warning';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Draw Disabled (Must Close Campaign First)';
+      }
+    } else {
+      statusNotice.className = 'alert alert-success';
       statusNotice.style.display = 'block';
       statusNotice.innerHTML = `
-        <strong>⚠️ Notice: Campaign is in DRAFT status:</strong><br>
-        This campaign has not been launched to participants yet.
+        <strong>✅ Campaign is CLOSED:</strong> The eligible participant pool is stable and ready for official server-side draw.
       `;
-      if (submitBtn) submitBtn.textContent = 'Execute Selection';
-    } else {
-      statusNotice.style.display = 'none';
-      if (submitBtn) submitBtn.textContent = 'Execute Selection (Server)';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Execute Official Selection (Server)';
+      }
     }
   }
 
@@ -970,7 +1145,7 @@ window.toggleLocationStatus = function(code) {
     const tableBody = document.getElementById('sourcesTableBody');
     renderSourcesTable(tableBody, locations);
     applyRolePermissions();
-    Api.updateSource(code, { active: target.active }).catch(() => {});
+    Api.toggleSourceStatus(code, target.active).catch(() => {});
   }
 };
 

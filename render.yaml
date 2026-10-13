@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: binth-api
+    runtime: node
+    plan: free
+    region: singapore # Closest region to Kerala audience
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false # Set to your Supabase Transaction Pooler URI (:6543) in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: IP_HASH_SALT
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: "https://binth.in,https://www.binth.in,https://binth.netlify.app"
+      - key: RATE_LIMIT_MAX_ENTRIES
+        value: "5"
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "600000"

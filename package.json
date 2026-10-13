@@ -7,7 +7,7 @@
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
     "db:init": "node server/scripts/init-db.js",
-    "build": "node -e \"console.log('Build completed for Vercel.')\""
+    "test": "npm --prefix server test"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
