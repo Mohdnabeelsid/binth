@@ -19,16 +19,20 @@ if (!process.env.DATABASE_URL) {
 const { Pool } = require('pg');
 
 // Detect SSL requirement (Supabase requires SSL; supports ?sslmode=require)
-const dbUrl = process.env.DATABASE_URL || '';
+const rawDbUrl = process.env.DATABASE_URL || '';
 const needsSsl = process.env.NODE_ENV === 'production' ||
-  dbUrl.includes('supabase') ||
-  dbUrl.includes('pooler') ||
-  dbUrl.includes('sslmode=require');
+  rawDbUrl.includes('supabase') ||
+  rawDbUrl.includes('pooler') ||
+  rawDbUrl.includes('sslmode=require');
+
+// Strip ?sslmode=... from the URL so pg connection string parser does not enforce strict verification.
+// Supabase connection poolers use self-signed intermediate certs, which requires rejectUnauthorized: false.
+const cleanDbUrl = rawDbUrl.replace(/([?&])sslmode=[^&]+(&|$)/, '$1').replace(/[?&]$/, '');
 
 // Cache the pool across serverless function re-invocations (warm starts)
 if (!global.__binthPgPool) {
   global.__binthPgPool = new Pool({
-    connectionString: dbUrl,
+    connectionString: cleanDbUrl,
     ssl: needsSsl ? { rejectUnauthorized: false } : false,
     // Keep max connections small for serverless/Supabase connection limits
     max: parseInt(process.env.DB_POOL_MAX, 10) || 4,
