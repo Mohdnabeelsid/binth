@@ -1,11 +1,11 @@
 services:
   - type: web
-    name: binth-api
+    name: binth-platform
     runtime: node
     plan: free
     region: singapore # Closest region to Kerala audience
-    buildCommand: cd server && npm install
-    startCommand: cd server && npm start
+    buildCommand: npm install
+    startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -19,7 +19,7 @@ services:
       - key: IP_HASH_SALT
         generateValue: true
       - key: CORS_ORIGIN
-        value: "https://binth.in,https://www.binth.in,https://binth.netlify.app"
+        value: "https://binth.in,https://www.binth.in"
       - key: RATE_LIMIT_MAX_ENTRIES
         value: "5"
       - key: RATE_LIMIT_WINDOW_MS

@@ -2,7 +2,7 @@
   "name": "binth-in",
   "version": "1.0.0",
   "description": "BINTH.IN — Kerala Handmade Boutique Girlswear & 48-Hour Giveaway Platform",
-  "main": "api/index.js",
+  "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
