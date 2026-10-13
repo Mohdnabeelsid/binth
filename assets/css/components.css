@@ -58,13 +58,13 @@
 }
 
 .btn-terracotta {
-  background-color: var(--color-muted-terracotta);
+  background-color: var(--color-terracotta-text);
   color: #FFFFFF;
-  border-color: var(--color-muted-terracotta);
+  border-color: var(--color-terracotta-text);
 }
 
 .btn-terracotta:hover {
-  background-color: #A0644A;
+  background-color: #7F4733;
   color: #FFFFFF;
 }
 
@@ -318,7 +318,7 @@
 
 .badge-terracotta {
   background-color: rgba(184, 121, 93, 0.15);
-  color: var(--color-muted-terracotta);
+  color: var(--color-terracotta-text);
 }
 
 /* ==========================================================================

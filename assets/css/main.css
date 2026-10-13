@@ -19,7 +19,8 @@
   --color-bg-elevated: #FFFFFF;
   --color-text-main: #2C2422;
   --color-text-muted: #6B5E59;
-  --color-text-light: #8E7F79;
+  --color-text-light: #6F625C;   /* darkened from #8E7F79 to pass 4.5:1 on cream */
+  --color-terracotta-text: #9A5A41; /* text-safe terracotta; --color-muted-terracotta stays for fills */
   --color-border: #E5DCD0;
   --color-border-subtle: #EFE7DC;
   --color-border-focus: var(--color-deep-maroon);
@@ -120,7 +121,7 @@ a {
 }
 
 a:hover {
-  color: var(--color-muted-terracotta);
+  color: var(--color-terracotta-text);
 }
 
 img, svg {
@@ -172,7 +173,7 @@ img, svg {
 .text-right { text-align: right; }
 .text-muted { color: var(--color-text-muted); }
 .text-maroon { color: var(--color-deep-maroon); }
-.text-terracotta { color: var(--color-muted-terracotta); }
+.text-terracotta { color: var(--color-terracotta-text); }
 .text-sage { color: var(--color-sage-green); }
 
 .brand-eyebrow {
@@ -181,7 +182,7 @@ img, svg {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   font-weight: 600;
-  color: var(--color-muted-terracotta);
+  color: var(--color-terracotta-text);
   margin-bottom: var(--space-xs);
 }
 
