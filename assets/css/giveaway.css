@@ -1,294 +1,488 @@
 /**
- * BINTH.IN — Public Giveaway Page Styling
- * Mobile-first, serene, warm boutique editorial aesthetic
+ * BINTH.IN — Public pages (index.html, success.html)
+ * Editorial, warm boutique look. Scoped to .giveaway-page so the admin portal is untouched.
+ * Layout: asymmetric hero (headline left, hand-stitched fabric panel right),
+ * a quiet one-line process, a paper form panel, and a keepsake-style success page.
  */
 
 .giveaway-page {
-  background-color: var(--color-warm-cream);
+  --gv-paper: #F7F0E3;
+  --gv-paper-2: #EFE4D2;
+  --gv-ink: #30110E;
+  --gv-ink-soft: #5C4640;
+  --gv-terra: #9A5A41;          /* text-safe terracotta (4.5:1+ on paper) */
+  --gv-sage: #A8B5A2;
+  --gv-sage-deep: #4F6148;
+  --gv-gold: #B38B3F;
+  --gv-line: #DCCDB6;
+  --gv-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --gv-accent: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --gv-body: "Jost", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  background-color: var(--gv-paper);
+  color: var(--gv-ink);
+  font-family: var(--gv-body);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* Header & Brand Bar */
+.giveaway-page h1,
+.giveaway-page h2,
+.giveaway-page h3 {
+  font-family: var(--gv-display);
+  color: var(--gv-ink);
+  font-weight: 300;
+  text-wrap: balance;
+}
+
+.giveaway-page :focus-visible { outline-color: var(--gv-terra); }
+
+.is-hidden { display: none; }
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -48px;
+  background: var(--gv-ink);
+  color: var(--gv-paper);
+  padding: 10px 16px;
+  z-index: 2000;
+  transition: top var(--transition-fast);
+}
+.skip-link:focus { top: 12px; color: var(--gv-paper); }
+
+.gv-wrap {
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+
+/* ---------- Header ---------- */
 .brand-header {
-  padding: var(--space-md) 0;
-  border-bottom: 1px solid var(--color-border);
-  background-color: var(--color-soft-ivory);
-  text-align: center;
+  border-bottom: 1px solid var(--gv-line);
+  background: transparent;
 }
-
-.brand-logo-link {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
-}
-
-.brand-logo-text {
-  font-family: var(--font-serif);
-  font-size: 1.85rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  color: var(--color-deep-maroon);
-  line-height: 1.1;
-}
-
-.brand-subline {
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-muted-terracotta);
-  font-weight: 500;
-  margin-top: 3px;
-}
-
-/* Hero Section */
-.giveaway-hero {
-  padding: var(--space-2xl) 0 var(--space-xl);
-  text-align: center;
-  position: relative;
-}
-
-.giveaway-hero-card {
-  background: var(--color-soft-ivory);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-xl) var(--space-lg);
-  box-shadow: var(--shadow-card);
-  margin-bottom: var(--space-xl);
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-ornament {
+.brand-header .gv-wrap {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-sm);
-  color: var(--color-dusty-rose);
-  font-size: 1.2rem;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 22px;
+}
+.brand-wordmark {
+  font-family: var(--gv-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  color: var(--gv-ink);
+}
+.brand-wordmark span { color: var(--gv-terra); }
+.brand-note {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gv-ink-soft);
 }
 
-.giveaway-hero h1 {
-  margin-bottom: var(--space-sm);
-  font-size: clamp(1.85rem, 3.5vw + 0.5rem, 2.75rem);
+/* ---------- Hero ---------- */
+.gv-hero {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 56px;
+  align-items: center;
+  padding-block: 64px 56px;
+}
+.gv-hero > * { min-width: 0; }
+
+.gv-eyebrow {
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--gv-terra);
+  margin-bottom: 18px;
+}
+
+.gv-hero h1 {
+  font-size: clamp(2.6rem, 6.2vw, 4.9rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin-bottom: 22px;
+}
+.gv-hero h1 em,
+.gv-section-title em,
+.gv-done h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--gv-terra);
 }
 
 .hero-lead {
-  font-size: 1.05rem;
-  color: var(--color-text-muted);
-  max-width: 540px;
-  margin: 0 auto var(--space-lg);
+  max-width: 30rem;
+  font-size: 1.08rem;
+  color: var(--gv-ink-soft);
+  margin: 0 0 30px;
 }
 
-/* Prize Feature Callout */
-.prize-banner {
-  background: linear-gradient(135deg, #FAF3EB 0%, #F5ECE0 100%);
-  border: 1px dashed var(--color-muted-terracotta);
-  border-radius: var(--radius-md);
-  padding: var(--space-md) var(--space-lg);
-  margin: var(--space-md) auto;
-  max-width: 540px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  text-align: left;
-}
+.giveaway-page .alert { max-width: 30rem; }
 
-.prize-icon {
-  font-size: 2rem;
-  color: var(--color-deep-maroon);
-  flex-shrink: 0;
-}
-
-.prize-title {
-  font-family: var(--font-serif);
-  font-size: 1.15rem;
-  color: var(--color-deep-maroon);
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.prize-desc {
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-}
-
-/* Countdown Bar */
+/* Countdown */
 .countdown-box {
   display: flex;
-  justify-content: center;
-  gap: var(--space-sm);
-  margin: var(--space-lg) 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 22px;
+  max-width: 30rem;
+  padding-block: 16px;
+  border-block: 1px solid var(--gv-line);
 }
-
-.countdown-unit {
-  background: var(--color-soft-ivory);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  min-width: 68px;
-  padding: 0.6rem 0.4rem;
-  text-align: center;
-}
-
-.countdown-val {
-  font-family: var(--font-serif);
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: var(--color-deep-maroon);
-  line-height: 1;
-}
-
-.countdown-lbl {
-  font-size: 0.675rem;
+.countdown-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-light);
-  margin-top: 4px;
+  color: var(--gv-ink-soft);
 }
-
+.countdown-row { display: flex; gap: 18px; }
+.countdown-unit { display: flex; align-items: baseline; gap: 5px; }
+.countdown-val {
+  font-family: var(--gv-display);
+  font-size: 1.7rem;
+  font-weight: 300;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--gv-ink);
+}
+.countdown-lbl {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gv-ink-soft);
+}
 .countdown-notice {
-  font-size: 0.825rem;
-  color: var(--color-text-muted);
-  background: #F3EAE0;
-  border-radius: var(--radius-sm);
-  padding: 0.4rem 0.8rem;
-  display: inline-block;
-  margin-top: var(--space-xs);
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--gv-ink-soft);
+  min-height: 1.4em;
 }
 
-/* 4-Step Process Guide */
-.steps-grid {
+.gv-hero .btn { margin-top: 24px; }
+
+/* Buttons on public pages */
+.giveaway-page .btn { letter-spacing: 0.06em; border-radius: 2px; }
+.giveaway-page .btn-primary {
+  background-color: var(--gv-ink);
+  border-color: var(--gv-ink);
+  color: var(--gv-paper);
+  box-shadow: none;
+}
+.giveaway-page .btn-primary:hover { background-color: #4A211C; color: #FFFFFF; }
+.giveaway-page .btn-outline { color: var(--gv-ink); border-color: var(--gv-ink); }
+.giveaway-page .btn-lg { padding: 1rem 1.9rem; font-size: 0.98rem; border-radius: 2px; }
+
+/* Fabric panel (pure CSS, replace with a real photograph when available) */
+.fabric-wrap { position: relative; padding: 14px; }
+.fabric {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  max-width: 100%;
+  border-radius: 2px;
+  overflow: hidden;
+  background:
+    linear-gradient(115deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 38%, rgba(0,0,0,0.12) 62%, rgba(255,255,255,0.12) 100%),
+    repeating-linear-gradient(0deg, rgba(48,17,14,0.07) 0 2px, transparent 2px 9px),
+    repeating-linear-gradient(90deg, rgba(48,17,14,0.07) 0 2px, transparent 2px 9px),
+    linear-gradient(160deg, #C9A5A0, #B9877C);
+  box-shadow: 0 30px 50px -28px rgba(48,17,14,0.45);
+}
+.fabric::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 0 46%, rgba(0,0,0,0.16) 50%, rgba(255,255,255,0.14) 54%, transparent 60%);
+}
+.fabric::after {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 1.5px dashed rgba(247,240,227,0.85);
+}
+.fabric-tag {
+  position: absolute;
+  left: -2px;
+  bottom: 34px;
+  transform: rotate(-3deg);
+  max-width: 78%;
+  padding: 14px 18px 14px 20px;
+  background: var(--gv-paper);
+  border-left: 3px solid var(--gv-gold);
+  box-shadow: 0 14px 24px -14px rgba(48,17,14,0.5);
+}
+.fabric-tag b {
+  display: block;
+  font-family: var(--gv-display);
+  font-weight: 400;
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+.fabric-tag span {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gv-ink-soft);
+}
+
+/* ---------- Process ---------- */
+.gv-process {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 40px;
+  padding-block: 26px;
+  border-block: 1px solid var(--gv-line);
+  font-size: 0.95rem;
+  color: var(--gv-ink-soft);
+  list-style: none;
+}
+.gv-process li { display: flex; gap: 10px; align-items: baseline; }
+.gv-process li::before {
+  content: "";
+  flex: none;
+  width: 18px;
+  height: 1px;
+  background: var(--gv-terra);
+  transform: translateY(-4px);
+}
+
+/* ---------- Entry ---------- */
+.gv-entry {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-sm);
-  margin: var(--space-xl) 0;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 64px;
+  padding-block: 72px;
+}
+.gv-entry > * { min-width: 0; }
+
+.gv-section-title {
+  font-size: clamp(1.9rem, 3.4vw, 2.7rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-bottom: 18px;
+}
+.gv-side p { color: var(--gv-ink-soft); max-width: 24rem; }
+
+.prize-banner {
+  margin-top: 30px;
+  padding: 20px 22px;
+  background: var(--gv-paper-2);
+  border-left: 3px solid var(--gv-sage);
+}
+.prize-label {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--gv-sage-deep);
+  margin-bottom: 6px;
+}
+.prize-title {
+  font-family: var(--gv-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--gv-ink);
+}
+.prize-desc { margin-top: 4px; font-size: 0.9rem; color: var(--gv-ink-soft); }
+
+.privacy-note {
+  max-width: 24rem;
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--gv-line);
+  font-family: var(--gv-accent);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--gv-ink-soft);
+}
+
+.giveaway-form-wrap {
+  background: var(--gv-paper-2);
+  border: 1px solid var(--gv-line);
+  border-radius: 2px;
+  padding: clamp(24px, 4vw, 44px);
+}
+
+.giveaway-page fieldset { border: 0; padding: 0; margin: 0 0 30px; min-width: 0; }
+.giveaway-page .form-group { margin-bottom: 26px; }
+.giveaway-page .form-label,
+.giveaway-page legend.form-label {
+  display: block;
+  padding: 0;
+  margin-bottom: 12px;
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--gv-ink);
+}
+.giveaway-page .form-label .required { color: var(--color-error); }
+.giveaway-page .form-hint { font-size: 0.82rem; color: var(--gv-ink-soft); margin-top: 8px; }
+
+.giveaway-page .pill-group { gap: 10px; }
+.giveaway-page .pill-option input {
+  width: 100%;
+  height: 100%;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.giveaway-page .pill-box {
+  padding: 10px 18px;
+  font-size: 0.92rem;
+  font-weight: 400;
+  background: var(--gv-paper);
+  border-color: var(--gv-line);
+  color: var(--gv-ink);
+}
+.giveaway-page .pill-option input:hover + .pill-box { border-color: var(--gv-terra); }
+.giveaway-page .pill-option input:checked + .pill-box {
+  background: var(--gv-ink);
+  border-color: var(--gv-ink);
+  color: var(--gv-paper);
+}
+
+.giveaway-page .form-input {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--gv-ink-soft);
+  border-radius: 0;
+  padding: 8px 0 10px;
+  font-size: 1.05rem;
+}
+.giveaway-page .form-input::placeholder { color: var(--gv-ink-soft); opacity: 0.7; }
+.giveaway-page .form-input:focus {
+  border-bottom-color: var(--gv-terra);
+  box-shadow: 0 1px 0 var(--gv-terra);
+}
+.giveaway-page .form-input[aria-invalid="true"] {
+  background: transparent;
+  border-bottom-color: var(--color-error);
+}
+
+.consent-row { display: flex; gap: 12px; align-items: flex-start; margin: 4px 0 28px; }
+.consent-row .form-check { font-size: 0.92rem; color: var(--gv-ink-soft); }
+.consent-row strong { color: var(--gv-ink); font-weight: 500; }
+.consent-row .form-check input[type="checkbox"] { accent-color: var(--gv-ink); }
+
+.form-footnote { text-align: center; margin: 14px 0 0; }
+
+/* ---------- Success page ---------- */
+.gv-done {
+  max-width: 560px;
+  margin: 0 auto;
+  padding-block: 72px 80px;
   text-align: center;
 }
+.gv-done h1 { font-size: clamp(2.4rem, 6vw, 3.6rem); line-height: 1.05; margin-bottom: 16px; }
+.gv-done .hero-lead { margin-inline: auto; }
 
-@media (max-width: 640px) {
-  .steps-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-md);
-  }
+.entry-ticket {
+  max-width: 320px;
+  margin: 0 auto 28px;
+  padding: 20px;
+  border: 1.5px dashed var(--gv-ink-soft);
+  background: var(--gv-paper);
+}
+.entry-ticket small {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gv-ink-soft);
+}
+.entry-code {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--gv-display);
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--gv-ink);
 }
 
-.step-card {
-  background: var(--color-soft-ivory);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
-  padding: var(--space-md) var(--space-sm);
+.entry-recap {
+  max-width: 420px;
+  margin: 0 auto 28px;
+  padding: 18px 22px;
+  text-align: left;
+  font-size: 0.92rem;
+  color: var(--gv-ink-soft);
+  border-top: 1px solid var(--gv-line);
+  border-bottom: 1px solid var(--gv-line);
+}
+.entry-recap dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; margin: 0; }
+.entry-recap dt { letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.7rem; padding-top: 3px; }
+.entry-recap dd { margin: 0; color: var(--gv-ink); }
+
+.next-steps {
+  max-width: 420px;
+  margin: 0 auto 32px;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+  color: var(--gv-ink-soft);
+  font-size: 0.95rem;
+}
+.next-steps li { display: flex; gap: 10px; align-items: baseline; margin-bottom: 8px; }
+.next-steps li::before {
+  content: "";
+  flex: none;
+  width: 18px;
+  height: 1px;
+  background: var(--gv-terra);
+  transform: translateY(-4px);
 }
 
-.step-num {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--color-deep-maroon);
-  color: #FFFFFF;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 600;
-  margin-bottom: var(--space-xs);
-}
+.share-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
+.share-msg { margin-top: 14px; font-size: 0.85rem; color: var(--gv-ink-soft); min-height: 1.4em; }
 
-.step-title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--color-deep-maroon);
-  margin-bottom: 3px;
-}
-
-.step-desc {
-  font-size: 0.775rem;
-  color: var(--color-text-muted);
-  line-height: 1.35;
-}
-
-/* Giveaway Form Container */
-.giveaway-form-wrap {
-  background: var(--color-soft-ivory);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-xl) var(--space-lg);
-  box-shadow: var(--shadow-card);
-  margin-bottom: var(--space-2xl);
-}
-
-@media (max-width: 480px) {
-  .giveaway-form-wrap {
-    padding: var(--space-lg) var(--space-md);
-  }
-}
-
-.form-section-title {
-  font-family: var(--font-serif);
-  font-size: 1.15rem;
-  color: var(--color-deep-maroon);
-  margin-bottom: var(--space-sm);
-  padding-bottom: var(--space-2xs);
-  border-bottom: 1px solid var(--color-border-subtle);
-}
-
-/* Source Tag Badge */
-.source-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  background: #EFE7DE;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  padding: 0.25rem 0.75rem;
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-md);
-}
-
-/* Trust & Privacy Notice */
-.privacy-badge-box {
-  background: #F9F5EF;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  font-size: 0.825rem;
-  color: var(--color-text-muted);
-  margin-top: var(--space-lg);
-  line-height: 1.45;
-}
-
-.privacy-badge-box strong {
-  color: var(--color-deep-maroon);
-}
-
-/* Footer */
+/* ---------- Footer ---------- */
 .site-footer {
   margin-top: auto;
-  background: #EFE7DE;
-  border-top: 1px solid var(--color-border);
-  padding: var(--space-xl) 0 var(--space-lg);
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
+  background: transparent;
+  border-top: 1px solid var(--gv-line);
+  padding: 40px 0 48px;
+  text-align: left;
 }
-
-.footer-nav {
+.site-footer .gv-wrap {
   display: flex;
-  justify-content: center;
-  gap: var(--space-lg);
-  margin-bottom: var(--space-md);
   flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px 40px;
+}
+.footer-tagline {
+  font-family: var(--gv-accent);
+  font-style: italic;
+  font-size: 1.45rem;
+  color: var(--gv-ink);
+  margin: 0;
+}
+.footer-meta { margin: 0; font-size: 0.85rem; color: var(--gv-ink-soft); }
+.footer-meta a { color: var(--gv-ink-soft); }
+.footer-meta a:hover { color: var(--gv-terra); }
+
+/* ---------- Motion & responsive ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .gv-rise { animation: gvRise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .gv-hero > .gv-rise:nth-child(2) { animation-delay: 0.12s; }
+  @keyframes gvRise { from { transform: translateY(14px); } to { transform: none; } }
 }
 
-.footer-nav a {
-  color: var(--color-text-muted);
-  text-decoration: none;
-}
-
-.footer-nav a:hover {
-  color: var(--color-deep-maroon);
-  text-decoration: underline;
+@media (max-width: 860px) {
+  .gv-hero { grid-template-columns: 1fr; gap: 36px; padding-block: 40px; }
+  .fabric-wrap { max-width: 420px; }
+  .gv-entry { grid-template-columns: 1fr; gap: 40px; padding-block: 48px; }
 }

@@ -3,299 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A Little Surprise for Her 🤍 — BINTH.IN Giveaway</title>
-  <meta name="description" content="Enter our 48-hour boutique giveaway. Handmade pure cotton girlswear made with care in Kerala for ages 5–16.">
+  <title>A Little Surprise for Her — BINTH.IN Giveaway</title>
+  <meta name="description" content="Enter the BINTH.IN 48-hour giveaway for a handmade festive set, stitched in Kerala from soft pure cotton.">
+  <meta name="theme-color" content="#F7F0E3">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="BINTH.IN">
+  <meta property="og:title" content="A little surprise for her">
+  <meta property="og:description" content="Enter the 48-hour giveaway for a handmade festive set, stitched in Kerala from soft pure cotton.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="A little surprise for her — BINTH.IN">
+  <meta name="twitter:description" content="Enter the 48-hour giveaway for a handmade festive set, stitched in Kerala.">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2330110E'/%3E%3Ctext x='32' y='46' font-family='Georgia,serif' font-size='40' text-anchor='middle' fill='%23F7F0E3'%3EB%3C/text%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Cormorant+Garamond:ital,wght@1,400&family=Jost:wght@400;500;600&display=swap">
+
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/giveaway.css">
 </head>
 <body class="giveaway-page">
 
-  <!-- Minimal Brand Header (Wordmark only) -->
+  <a class="skip-link" href="#mainContent">Skip to content</a>
+
   <header class="brand-header" role="banner">
-    <div class="container">
-      <div class="brand-logo-link" style="cursor: default;">
-        <span class="brand-logo-text">BINTH.IN</span>
-        <span class="brand-subline">Handmade with care. Made for little ones.</span>
-      </div>
+    <div class="gv-wrap">
+      <div class="brand-wordmark" aria-label="BINTH.IN">BINTH<span>.</span>IN</div>
+      <div class="brand-note">Handmade in Kerala</div>
     </div>
   </header>
 
-  <!-- Main Giveaway Experience -->
-  <main id="mainContent" class="giveaway-hero" role="main">
-    <div class="container-narrow">
+  <main id="mainContent" role="main">
+    <div class="gv-wrap">
 
-      <!-- Server Loading State -->
-      <div id="campaignLoadingBanner" class="alert alert-info" style="display: none; justify-content: center;">
-        <span class="spinner"></span> Connecting to live campaign server...
-      </div>
+      <section class="gv-hero" aria-labelledby="campaignHeroTitle">
+        <div class="gv-rise">
 
-      <!-- Honest Backend / Status Notice (when backend not connected or returning message) -->
-      <div id="campaignStatusNotice" class="alert alert-warning" style="display: none; text-align: left;" role="alert">
-      </div>
+          <div id="campaignLoadingBanner" class="alert alert-info is-hidden" role="status">
+            <span class="spinner"></span> Loading the giveaway&hellip;
+          </div>
+          <div id="campaignStatusNotice" class="alert alert-warning is-hidden" role="alert"></div>
 
-      <!-- Hero Header -->
-      <div class="hero-ornament" aria-hidden="true">✦ ✿ ✦</div>
-      <h1 id="campaignHeroTitle">A Little Surprise for Her 🤍</h1>
-      <p id="campaignHeroDesc" class="hero-lead">
-        Tell us a little about what you look for when choosing clothes for her, and enter our BINTH.IN giveaway.
-      </p>
+          <p class="gv-eyebrow">48-hour giveaway</p>
+          <h1 id="campaignHeroTitle">A little <em>surprise</em> for her.</h1>
+          <p id="campaignHeroDesc" class="hero-lead">
+            Tell us what she loves to wear and you are in the draw for a handmade festive set, stitched in Kerala from soft pure cotton.
+          </p>
 
-      <!-- Prize Highlight Card -->
-      <div class="prize-banner" role="region" aria-label="Giveaway Prize Details">
-        <div class="prize-icon" aria-hidden="true">🎁</div>
-        <div>
-          <div id="prizeTitle" class="prize-title">Handmade Festive Kurti & Dress Set</div>
-          <div id="prizeDesc" class="prize-desc">Crafted in Kerala with breathable pure cotton and handloom accents.</div>
-        </div>
-      </div>
-
-      <!-- 48-Hour Live Countdown (read from trusted server) -->
-      <section id="countdownSection" class="countdown-box" aria-label="Campaign Time Remaining">
-        <div class="countdown-unit">
-          <div id="cdDays" class="countdown-val">00</div>
-          <div class="countdown-lbl">Days</div>
-        </div>
-        <div class="countdown-unit">
-          <div id="cdHours" class="countdown-val">00</div>
-          <div class="countdown-lbl">Hours</div>
-        </div>
-        <div class="countdown-unit">
-          <div id="cdMinutes" class="countdown-val">00</div>
-          <div class="countdown-lbl">Mins</div>
-        </div>
-        <div class="countdown-unit">
-          <div id="cdSeconds" class="countdown-val">00</div>
-          <div class="countdown-lbl">Secs</div>
-        </div>
-      </section>
-      <div id="countdownNotice" class="countdown-notice" role="status">
-        Checking server for official campaign timing...
-      </div>
-
-      <!-- 4-Step Process Guide -->
-      <div class="steps-grid" role="list" aria-label="How the giveaway works">
-        <div class="step-card" role="listitem">
-          <div class="step-num">1</div>
-          <div class="step-title">Preferences</div>
-          <div class="step-desc">Share her age & favourite styles</div>
-        </div>
-        <div class="step-card" role="listitem">
-          <div class="step-num">2</div>
-          <div class="step-title">Contact</div>
-          <div class="step-desc">Enter your WhatsApp details</div>
-        </div>
-        <div class="step-card" role="listitem">
-          <div class="step-num">3</div>
-          <div class="step-title">48-Hour Window</div>
-          <div class="step-desc">Campaign closes automatically</div>
-        </div>
-        <div class="step-card" role="listitem">
-          <div class="step-num">4</div>
-          <div class="step-title">Random Draw</div>
-          <div class="step-desc">Eligible entrant chosen fairly</div>
-        </div>
-      </div>
-
-      <!-- Survey Form Container -->
-      <div class="giveaway-form-wrap">
-        
-        <div id="formGeneralAlert" class="alert" style="display: none;" role="alert"></div>
-
-        <form id="giveawayForm" novalidate aria-label="Giveaway Entry Survey Form">
-
-          <!-- Section 1: Her Style Preferences -->
-          <h2 class="form-section-title">1. What She Loves to Wear</h2>
-
-          <!-- Girl's Age Range -->
-          <fieldset class="form-group" style="border: none; padding: 0;">
-            <legend class="form-label">
-              Her Age Range <span class="required" aria-hidden="true">*</span>
-            </legend>
-            <div class="pill-group" role="radiogroup" aria-required="true" aria-describedby="ageRangeError">
-              <label class="pill-option">
-                <input type="radio" name="ageRange" value="5-7">
-                <span class="pill-box">5–7 years</span>
-              </label>
-              <label class="pill-option">
-                <input type="radio" name="ageRange" value="8-10">
-                <span class="pill-box">8–10 years</span>
-              </label>
-              <label class="pill-option">
-                <input type="radio" name="ageRange" value="11-13">
-                <span class="pill-box">11–13 years</span>
-              </label>
-              <label class="pill-option">
-                <input type="radio" name="ageRange" value="14-16">
-                <span class="pill-box">14–16 years</span>
-              </label>
+          <section id="countdownSection" class="countdown-box" aria-label="Time left in the giveaway">
+            <span class="countdown-title">Closes in</span>
+            <div class="countdown-row">
+              <div class="countdown-unit"><span id="cdDays" class="countdown-val">00</span><span class="countdown-lbl">d</span></div>
+              <div class="countdown-unit"><span id="cdHours" class="countdown-val">00</span><span class="countdown-lbl">h</span></div>
+              <div class="countdown-unit"><span id="cdMinutes" class="countdown-val">00</span><span class="countdown-lbl">m</span></div>
+              <div class="countdown-unit"><span id="cdSeconds" class="countdown-val">00</span><span class="countdown-lbl">s</span></div>
             </div>
-            <div id="ageRangeError" class="form-error"></div>
-          </fieldset>
+          </section>
+          <div id="countdownNotice" class="countdown-notice" role="status">Confirming the closing time&hellip;</div>
 
-          <!-- Clothing Interests -->
-          <fieldset class="form-group" style="border: none; padding: 0;">
-            <legend class="form-label">
-              Clothing Styles of Interest <span class="required" aria-hidden="true">*</span>
-              <span class="form-hint" style="display: block; font-weight: normal;">Select all that apply</span>
-            </legend>
-            <div class="pill-group" aria-describedby="interestsError">
-              <label class="pill-option">
-                <input type="checkbox" name="clothingInterests" value="everyday wear">
-                <span class="pill-box">Everyday Wear</span>
-              </label>
-              <label class="pill-option">
-                <input type="checkbox" name="clothingInterests" value="kurtis">
-                <span class="pill-box">Kurtis</span>
-              </label>
-              <label class="pill-option">
-                <input type="checkbox" name="clothingInterests" value="dresses">
-                <span class="pill-box">Dresses</span>
-              </label>
-              <label class="pill-option">
-                <input type="checkbox" name="clothingInterests" value="festive wear">
-                <span class="pill-box">Festive Wear</span>
-              </label>
-              <label class="pill-option">
-                <input type="checkbox" name="clothingInterests" value="casual outings">
-                <span class="pill-box">Casual Outings</span>
-              </label>
-            </div>
-            <div id="interestsError" class="form-error"></div>
-          </fieldset>
-
-          <!-- Section 2: Parent / Guardian Details -->
-          <h2 class="form-section-title" style="margin-top: var(--space-xl);">2. Parent / Guardian Details</h2>
-
-          <!-- Parent Name -->
-          <div class="form-group">
-            <label for="parentName" class="form-label">
-              Your Name <span class="required" aria-hidden="true">*</span>
-            </label>
-            <input 
-              type="text" 
-              id="parentName" 
-              name="parentName" 
-              class="form-input" 
-              placeholder="e.g. Ananya Menon"
-              autocomplete="name"
-              required
-              aria-describedby="parentNameHint parentNameError"
-            >
-            <div id="parentNameHint" class="form-hint">Parent or guardian's full name.</div>
-            <div id="parentNameError" class="form-error"></div>
-          </div>
-
-          <!-- WhatsApp Phone Number -->
-          <div class="form-group">
-            <label for="whatsappPhone" class="form-label">
-              WhatsApp Mobile Number <span class="required" aria-hidden="true">*</span>
-            </label>
-            <input 
-              type="tel" 
-              id="whatsappPhone" 
-              name="whatsappPhone" 
-              class="form-input" 
-              placeholder="10-digit mobile number (e.g. 98470 12345)"
-              autocomplete="tel"
-              required
-              aria-describedby="phoneHint phoneError"
-            >
-            <div id="phoneHint" class="form-hint">We will notify the giveaway winner directly on WhatsApp.</div>
-            <div id="phoneError" class="form-error"></div>
-          </div>
-
-          <!-- Marketing Consent (Independent, Optional Checkbox) -->
-          <div class="form-group" style="margin-top: var(--space-lg); background: #FAF5EE; padding: var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--color-border-subtle);">
-            <label class="form-check">
-              <input type="checkbox" id="marketingConsent" name="marketingConsent">
-              <span>
-                <strong>Optional WhatsApp Updates:</strong><br>
-                <span class="text-muted" style="font-size: 0.85rem;">
-                  I'd like to receive BINTH.IN updates and future giveaway announcements on WhatsApp.
-                </span>
-              </span>
-            </label>
-            <div class="form-hint" style="margin-left: 2rem;">
-              Declining marketing consent will not affect your giveaway eligibility in any way.
-            </div>
-          </div>
-
-          <!-- Submit Button -->
-          <div style="margin-top: var(--space-xl);">
-            <button type="submit" id="giveawaySubmitBtn" class="btn btn-primary btn-lg btn-block">
-              Enter 48-Hour Giveaway
-            </button>
-            <div class="form-hint text-center" style="margin-top: var(--space-xs);">
-              Takes less than 90 seconds. Limited to one entry per participant per campaign.
-            </div>
-          </div>
-
-        </form>
-
-        <!-- Child Privacy & Safety Guarantee -->
-        <aside class="privacy-badge-box" aria-label="Privacy and child protection commitment">
-          <strong>🔒 Child Privacy & Safety Commitment:</strong><br>
-          We strictly protect your family's privacy. We do not collect a child's full name, exact date of birth, photographs, school, or residential address. All information is handled with care for this giveaway only.
-        </aside>
-
-      </div>
-
-      <!-- Submission Confirmation Box (Hidden until successful submission) -->
-      <section id="submissionConfirmationBox" class="card" style="display: none; text-align: center; margin-bottom: var(--space-2xl);" aria-labelledby="confirmHeading">
-        <div class="hero-ornament" aria-hidden="true" style="font-size: 2.2rem; margin-bottom: var(--space-xs);">🤍</div>
-        <span class="brand-eyebrow">Participation Recorded</span>
-        <h2 id="confirmHeading" style="font-size: 1.85rem; margin-bottom: var(--space-xs);">
-          You're in the Giveaway!
-        </h2>
-        <p class="hero-lead" style="margin-bottom: var(--space-lg);">
-          <span id="confirmParentName"></span>Thank you for sharing what you look for when choosing clothes for her. Your entry has been recorded.
-        </p>
-
-        <!-- Entry Reference Code -->
-        <div style="background: #F3EAE0; border: 1px dashed var(--color-deep-maroon); border-radius: var(--radius-md); padding: var(--space-md); margin: 0 auto var(--space-lg); max-width: 380px;">
-          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted);">
-            Your Entry Reference Code
-          </div>
-          <div id="confirmEntryCode" style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; color: var(--color-deep-maroon); margin-top: 4px;">
-            ENT-CONFIRMED
-          </div>
+          <a class="btn btn-primary btn-lg" href="#enter">Enter the giveaway</a>
         </div>
 
-        <div style="text-align: left; background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); max-width: 500px; margin: 0 auto var(--space-lg); font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.55;">
-          <strong>What Happens Next:</strong>
-          <ul style="margin: var(--space-xs) 0 0 1.25rem;">
-            <li>The 48-hour campaign timer continues until closing.</li>
-            <li>An eligible participant is selected randomly by our verified selection draw.</li>
-            <li>The winner will be notified directly via WhatsApp.</li>
-          </ul>
+        <div class="fabric-wrap gv-rise" aria-hidden="true">
+          <div class="fabric"></div>
+          <div class="fabric-tag"><b>Stitched by hand</b><span>Pure cotton &middot; Handloom accents</span></div>
         </div>
       </section>
 
-      <!-- Section 7: Subtle Instagram Link (Secondary to giveaway) -->
-      <div style="text-align: center; margin: var(--space-lg) 0 var(--space-xl);">
-        <a 
-          href="https://instagram.com/binth.in" 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          class="btn btn-secondary btn-sm"
-          style="display: inline-flex; align-items: center; gap: 8px; font-weight: 500; color: var(--color-deep-maroon); border-color: var(--color-border);"
-          aria-label="Follow BINTH.IN on Instagram (opens in new tab)"
-        >
-          <span aria-hidden="true">📸</span>
-          <strong>Follow BINTH.IN on Instagram</strong>
-          <span style="font-size: 0.75rem; opacity: 0.7;">↗</span>
-        </a>
-      </div>
+      <ul class="gv-process" aria-label="How the giveaway works">
+        <li>Share what she loves to wear</li>
+        <li>Add your WhatsApp number</li>
+        <li>One entry is drawn at random when the 48 hours end</li>
+      </ul>
+
+      <section id="enter" class="gv-entry" aria-labelledby="entryHeading">
+        <div class="gv-side">
+          <p class="gv-eyebrow">Your entry</p>
+          <h2 id="entryHeading" class="gv-section-title">Two minutes, <em>made with care.</em></h2>
+          <p>Her answers help us choose what to stitch next. Yours help us reach you if she wins.</p>
+
+          <div class="prize-banner" role="region" aria-label="Giveaway prize">
+            <span class="prize-label">The prize</span>
+            <div id="prizeTitle" class="prize-title">Handmade Festive Kurti &amp; Dress Set</div>
+            <div id="prizeDesc" class="prize-desc">Crafted in Kerala with breathable pure cotton and handloom accents.</div>
+          </div>
+
+          <p class="privacy-note">We never ask for her full name, date of birth, photographs, school or address.</p>
+        </div>
+
+        <div class="giveaway-form-wrap">
+
+          <div id="formGeneralAlert" class="alert is-hidden" role="alert"></div>
+
+          <form id="giveawayForm" novalidate aria-label="Giveaway entry form">
+
+            <fieldset class="form-group">
+              <legend class="form-label">Her age <span class="required" aria-hidden="true">*</span></legend>
+              <div class="pill-group" role="radiogroup" aria-required="true" aria-describedby="ageRangeError">
+                <label class="pill-option"><input type="radio" name="ageRange" value="5-7"><span class="pill-box">5 to 7 years</span></label>
+                <label class="pill-option"><input type="radio" name="ageRange" value="8-10"><span class="pill-box">8 to 10 years</span></label>
+                <label class="pill-option"><input type="radio" name="ageRange" value="11-13"><span class="pill-box">11 to 13 years</span></label>
+                <label class="pill-option"><input type="radio" name="ageRange" value="14-16"><span class="pill-box">14 to 16 years</span></label>
+              </div>
+              <div id="ageRangeError" class="form-error"></div>
+            </fieldset>
+
+            <fieldset class="form-group">
+              <legend class="form-label">What she loves to wear <span class="required" aria-hidden="true">*</span></legend>
+              <div class="pill-group" aria-describedby="interestsHint interestsError">
+                <label class="pill-option"><input type="checkbox" name="clothingInterests" value="everyday wear"><span class="pill-box">Everyday wear</span></label>
+                <label class="pill-option"><input type="checkbox" name="clothingInterests" value="kurtis"><span class="pill-box">Kurtis</span></label>
+                <label class="pill-option"><input type="checkbox" name="clothingInterests" value="dresses"><span class="pill-box">Dresses</span></label>
+                <label class="pill-option"><input type="checkbox" name="clothingInterests" value="festive wear"><span class="pill-box">Festive wear</span></label>
+                <label class="pill-option"><input type="checkbox" name="clothingInterests" value="casual outings"><span class="pill-box">Casual outings</span></label>
+              </div>
+              <div id="interestsHint" class="form-hint">Choose as many as she likes.</div>
+              <div id="interestsError" class="form-error"></div>
+            </fieldset>
+
+            <div class="form-group">
+              <label for="parentName" class="form-label">Your name <span class="required" aria-hidden="true">*</span></label>
+              <input type="text" id="parentName" name="parentName" class="form-input" placeholder="Ananya Menon" autocomplete="name" required aria-describedby="parentNameError">
+              <div id="parentNameError" class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="whatsappPhone" class="form-label">WhatsApp number <span class="required" aria-hidden="true">*</span></label>
+              <input type="tel" id="whatsappPhone" name="whatsappPhone" class="form-input" placeholder="98470 12345" autocomplete="tel" inputmode="tel" required aria-describedby="phoneHint phoneError">
+              <div id="phoneHint" class="form-hint">If she wins, we message you here.</div>
+              <div id="phoneError" class="form-error"></div>
+            </div>
+
+            <div class="consent-row">
+              <label class="form-check">
+                <input type="checkbox" id="marketingConsent" name="marketingConsent">
+                <span><strong>Keep me posted.</strong> Send me BINTH.IN news and future giveaways on WhatsApp. This does not affect your entry.</span>
+              </label>
+            </div>
+
+            <button type="submit" id="giveawaySubmitBtn" class="btn btn-primary btn-lg btn-block">Enter the giveaway</button>
+            <p class="form-hint form-footnote">One entry per family. Takes under two minutes.</p>
+
+          </form>
+        </div>
+      </section>
 
     </div>
   </main>
 
-  <!-- Small Footer (No admin links, no distracting navigation) -->
-  <footer class="site-footer" role="contentinfo" style="padding: var(--space-lg) 0;">
-    <div class="container">
-      <p style="font-size: 0.8rem; color: var(--color-text-light); margin: 0;">
-        © 2026 BINTH.IN • Handmade with care in Kerala. Made for little ones.
+  <footer class="site-footer" role="contentinfo">
+    <div class="gv-wrap">
+      <p class="footer-tagline">Handmade with care, made for little moments.</p>
+      <p class="footer-meta">
+        &copy; 2026 BINTH.IN &middot; Kerala &middot;
+        <a href="https://instagram.com/binth.in" target="_blank" rel="noopener noreferrer" aria-label="BINTH.IN on Instagram (opens in a new tab)">@binth.in</a>
       </p>
     </div>
   </footer>

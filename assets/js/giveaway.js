@@ -63,7 +63,7 @@ function showSourceFormatError() {
     generalAlert.className = 'alert alert-warning';
     generalAlert.innerHTML = `
       <div>
-        <strong>Notice:</strong> The QR access parameter format was not recognized. You may still participate in the giveaway below.
+        That poster link looked a little different than expected, but you can still enter the giveaway below.
       </div>
     `;
   }
@@ -100,19 +100,21 @@ async function loadCampaignData() {
     if (campaign.endTime && campaign.status === 'active') {
       startCountdown(campaign.endTime);
     } else {
-      showTimingUnavailable('Campaign status: ' + (campaign.status || 'Active'));
+      const status = campaign.status || 'active';
+      showTimingUnavailable(
+        status === 'scheduled' ? 'This giveaway has not opened yet.' :
+        status === 'closed' ? 'This giveaway has closed. Thank you for taking part.' :
+        'The closing time will appear here shortly.'
+      );
     }
   } else {
-    // Honest unavailable state when server endpoint is unreachable
+    // Honest unavailable state when the server cannot be reached (technical detail goes to the console only)
+    console.warn('Campaign load failed:', result.error || 'Server endpoint unreachable');
     if (campaignNotice) {
       campaignNotice.style.display = 'block';
-      const errorMsg = result.error || 'Server backend endpoint is currently unreachable.';
-      campaignNotice.innerHTML = `
-        <strong>Notice:</strong> ${escapeHtml(errorMsg)}<br>
-        <small class="text-muted">Campaign details are managed by the backend API at <code>/api/campaigns/active</code>.</small>
-      `;
+      campaignNotice.textContent = 'We could not load the latest giveaway details. Please refresh in a moment.';
     }
-    showTimingUnavailable('Campaign timing will display when live backend API is connected.');
+    showTimingUnavailable('The closing time will appear here shortly.');
   }
 }
 
@@ -138,12 +140,12 @@ function startCountdown(endTimeIsoString) {
       if (minutesEl) minutesEl.textContent = '00';
       if (secondsEl) secondsEl.textContent = '00';
       if (noticeEl) {
-        noticeEl.textContent = 'This 48-hour campaign has concluded. Winner selection is underway.';
+        noticeEl.textContent = 'The giveaway has closed. Thank you for taking part. The winner will be drawn shortly.';
       }
       const submitBtn = document.getElementById('giveawaySubmitBtn');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Campaign Closed';
+        submitBtn.textContent = 'Giveaway closed';
       }
       return;
     }
@@ -309,7 +311,7 @@ function initFormInteractions() {
 
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner"></span> Submitting entry...';
+      submitBtn.innerHTML = '<span class="spinner"></span> Sending your entry&hellip;';
     }
 
     // Send to live server endpoint
@@ -317,7 +319,7 @@ function initFormInteractions() {
 
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.innerHTML = 'Enter 48-Hour Giveaway';
+      submitBtn.textContent = 'Enter the giveaway';
     }
 
     if (response.ok) {
@@ -338,38 +340,19 @@ function initFormInteractions() {
       // Redirect to dedicated success confirmation page
       window.location.href = `success.html?entry=${encodeURIComponent(entryCode)}`;
     } else {
+      console.warn('Entry submission failed:', response.error || 'Server error');
       if (generalAlert) {
         generalAlert.style.display = 'flex';
         generalAlert.className = 'alert alert-danger';
         generalAlert.innerHTML = `
           <div>
-            <strong>Submission Notice:</strong> ${escapeHtml(response.error || 'Server error')}
-            <br>
-            <small>Phase 1 requires an active backend at <code>/api/giveaway/entries</code> to securely store participant data.</small>
+            We could not save your entry just now. ${escapeHtml(response.error || 'Please try again in a moment.')}
           </div>
         `;
         generalAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
   });
-}
-
-/**
- * Display confirmation state on page without exposing source codes
- */
-function showSubmissionConfirmation(entryCode, parentName) {
-  const formWrap = document.querySelector('.giveaway-form-wrap');
-  const confirmBox = document.getElementById('submissionConfirmationBox');
-  const refCodeEl = document.getElementById('confirmEntryCode');
-  const greetingEl = document.getElementById('confirmParentName');
-
-  if (formWrap) formWrap.style.display = 'none';
-  if (confirmBox) {
-    confirmBox.style.display = 'block';
-    if (refCodeEl) refCodeEl.textContent = entryCode;
-    if (greetingEl) greetingEl.textContent = parentName ? `Thank you, ${parentName}! ` : 'Thank you! ';
-    confirmBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
 }
 
 function escapeHtml(str) {

@@ -3,126 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>You're Entered! 🤍 — BINTH.IN Giveaway</title>
-  <meta name="description" content="Thank you for entering the BINTH.IN 48-Hour Giveaway.">
+  <title>You're In — BINTH.IN Giveaway</title>
+  <meta name="description" content="Thank you for entering the BINTH.IN 48-hour giveaway.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#F7F0E3">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2330110E'/%3E%3Ctext x='32' y='46' font-family='Georgia,serif' font-size='40' text-anchor='middle' fill='%23F7F0E3'%3EB%3C/text%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Cormorant+Garamond:ital,wght@1,400&family=Jost:wght@400;500;600&display=swap">
+
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/giveaway.css">
 </head>
 <body class="giveaway-page">
 
-  <!-- Header -->
+  <a class="skip-link" href="#mainContent">Skip to content</a>
+
   <header class="brand-header" role="banner">
-    <div class="container">
-      <div class="brand-logo-link" style="cursor: default;">
-        <span class="brand-logo-text">BINTH.IN</span>
-        <span class="brand-subline">Handmade with care. Made for little ones.</span>
-      </div>
+    <div class="gv-wrap">
+      <div class="brand-wordmark" aria-label="BINTH.IN">BINTH<span>.</span>IN</div>
+      <div class="brand-note">Handmade in Kerala</div>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main id="mainContent" class="giveaway-hero" role="main">
-    <div class="container-narrow">
+  <main id="mainContent" role="main">
+    <div class="gv-wrap">
+      <div class="gv-done">
 
-      <div class="giveaway-hero-card" style="text-align: center;">
-        <div class="hero-ornament" aria-hidden="true" style="font-size: 2.2rem; margin-bottom: var(--space-xs);">🤍</div>
-        <span class="brand-eyebrow">Participation Recorded</span>
-        <h1>You're in the Giveaway!</h1>
-        <p class="hero-lead">
-          Thank you for sharing what you look for when choosing clothes for her. Your entry has been recorded.
-        </p>
+        <p class="gv-eyebrow">Entry recorded</p>
+        <h1>You are <em>in.</em></h1>
+        <p class="hero-lead">Thank you for telling us what she loves to wear. The draw happens when the 48 hours end, and we will message the winner on WhatsApp.</p>
 
-        <!-- Entry Reference Code (No source code shown) -->
-        <div style="background: #F3EAE0; border: 1px dashed var(--color-deep-maroon); border-radius: var(--radius-md); padding: var(--space-md); margin: var(--space-md) auto; max-width: 380px;">
-          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted);">
-            Your Entry Reference Code
-          </div>
-          <div id="entryCodeDisplay" style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; color: var(--color-deep-maroon); margin-top: 4px;">
-            ENT-CONFIRMED
-          </div>
+        <div class="entry-ticket">
+          <small>Your entry code</small>
+          <code id="entryCodeDisplay" class="entry-code">ENT-CONFIRMED</code>
         </div>
 
-        <!-- Participant Details Recap -->
-        <div id="entryRecapSection" style="text-align: left; background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin: var(--space-lg) auto; max-width: 480px; display: none;">
-          <h2 style="font-size: 1rem; color: var(--color-deep-maroon); margin-bottom: var(--space-xs);">Entry Summary</h2>
-          <div style="font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.6;">
-            <div><strong>Parent:</strong> <span id="recapParentName">-</span></div>
-            <div><strong>WhatsApp:</strong> <span id="recapPhone">-</span></div>
-            <div><strong>Age Range:</strong> <span id="recapAge">-</span></div>
-            <div><strong>Submission Time:</strong> <span id="recapTime">-</span></div>
-          </div>
+        <div id="entryRecapSection" class="entry-recap is-hidden">
+          <dl>
+            <dt>Parent</dt><dd id="recapParentName">-</dd>
+            <dt>WhatsApp</dt><dd id="recapPhone">-</dd>
+            <dt>Her age</dt><dd id="recapAge">-</dd>
+            <dt>Entered</dt><dd id="recapTime">-</dd>
+          </dl>
         </div>
 
-        <!-- What Happens Next -->
-        <section class="card" style="text-align: left; margin: var(--space-xl) auto 0; max-width: 520px; background: #FAF6F1;" aria-labelledby="nextStepsTitle">
-          <h2 id="nextStepsTitle" style="font-size: 1.1rem; margin-bottom: var(--space-xs); color: var(--color-deep-maroon);">
-            What Happens Next?
-          </h2>
-          <ol style="margin-left: 1.25rem; font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.6;">
-            <li>The 48-hour campaign timer continues until closing.</li>
-            <li>Once closed, an eligible entry is selected through our verified selection draw.</li>
-            <li>The winner will be personally notified directly via WhatsApp.</li>
-          </ol>
-        </section>
+        <ul class="next-steps" aria-label="What happens next">
+          <li>The timer runs until the 48 hours end.</li>
+          <li>One eligible entry is drawn at random.</li>
+          <li>The winner hears from us directly on WhatsApp.</li>
+        </ul>
 
-        <!-- Subtle Instagram Link -->
-        <div style="margin-top: var(--space-xl);">
-          <a 
-            href="https://instagram.com/binth.in" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="btn btn-secondary btn-sm"
-            style="display: inline-flex; align-items: center; gap: 8px; font-weight: 500; color: var(--color-deep-maroon); border-color: var(--color-border);"
-          >
-            <span aria-hidden="true">📸</span>
-            <strong>Follow BINTH.IN on Instagram</strong>
-            <span style="font-size: 0.75rem; opacity: 0.7;">↗</span>
-          </a>
+        <div class="share-row">
+          <button type="button" id="copyInviteBtn" class="btn btn-primary">Copy a note for a friend</button>
+          <a class="btn btn-outline" href="https://instagram.com/binth.in" target="_blank" rel="noopener noreferrer">Follow on Instagram</a>
         </div>
+        <p id="copyInviteMsg" class="share-msg" role="status"></p>
 
       </div>
-
     </div>
   </main>
 
-  <!-- Small Footer -->
-  <footer class="site-footer" role="contentinfo" style="padding: var(--space-lg) 0;">
-    <div class="container">
-      <p style="font-size: 0.8rem; color: var(--color-text-light); margin: 0;">
-        © 2026 BINTH.IN • Handmade with care in Kerala. Made for little ones.
-      </p>
+  <footer class="site-footer" role="contentinfo">
+    <div class="gv-wrap">
+      <p class="footer-tagline">Handmade with care, made for little moments.</p>
+      <p class="footer-meta">&copy; 2026 BINTH.IN &middot; Kerala</p>
     </div>
   </footer>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlEntryCode = urlParams.get('entry');
-      const storedEntry = sessionStorage.getItem('binth_last_entry');
+    document.addEventListener('DOMContentLoaded', function () {
+      var params = new URLSearchParams(window.location.search);
+      var urlEntryCode = params.get('entry');
+      var entryData = null;
+      try {
+        var stored = sessionStorage.getItem('binth_last_entry');
+        if (stored) entryData = JSON.parse(stored);
+      } catch (e) {}
 
-      let entryData = null;
-      if (storedEntry) {
-        try { entryData = JSON.parse(storedEntry); } catch (e) {}
-      }
-
-      const codeDisplay = document.getElementById('entryCodeDisplay');
+      var codeEl = document.getElementById('entryCodeDisplay');
       if (urlEntryCode) {
-        codeDisplay.textContent = urlEntryCode;
+        codeEl.textContent = urlEntryCode;
       } else if (entryData && entryData.entryCode) {
-        codeDisplay.textContent = entryData.entryCode;
+        codeEl.textContent = entryData.entryCode;
       }
 
       if (entryData) {
-        const recap = document.getElementById('entryRecapSection');
-        if (recap) {
-          recap.style.display = 'block';
-          document.getElementById('recapParentName').textContent = entryData.parentName || '-';
-          document.getElementById('recapPhone').textContent = entryData.phoneMasked || '-';
-          document.getElementById('recapAge').textContent = (entryData.ageRange ? entryData.ageRange + ' years' : '-');
-          document.getElementById('recapTime').textContent = entryData.submittedAt || new Date().toLocaleString();
-        }
+        document.getElementById('entryRecapSection').classList.remove('is-hidden');
+        document.getElementById('recapParentName').textContent = entryData.parentName || '-';
+        document.getElementById('recapPhone').textContent = entryData.phoneMasked || '-';
+        document.getElementById('recapAge').textContent = entryData.ageRange ? entryData.ageRange + ' years' : '-';
+        document.getElementById('recapTime').textContent = entryData.submittedAt || new Date().toLocaleString();
       }
+
+      var note = 'A little surprise for her. Enter the BINTH.IN handmade giveaway: ' + window.location.origin;
+      document.getElementById('copyInviteBtn').addEventListener('click', function () {
+        var msg = document.getElementById('copyInviteMsg');
+        function fallback() { msg.textContent = 'Select and copy: ' + note; }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(note).then(function () {
+            msg.textContent = 'Copied. Paste it into a chat.';
+          }, fallback);
+        } else {
+          fallback();
+        }
+      });
     });
   </script>
 </body>
