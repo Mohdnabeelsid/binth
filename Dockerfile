@@ -6,7 +6,7 @@ WORKDIR /app
 # Install dependencies in server
 COPY server/package*.json ./server/
 WORKDIR /app/server
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copy entire project (frontend, admin, database, and backend)
 WORKDIR /app
